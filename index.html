@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P2P Intelligence Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.44.0/apexcharts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f7;
+  --surface: #ffffff;
+  --surface2: #f7f8fc;
+  --border: #e2e5ef;
+  --blue: #2563eb;
+  --blue-light: #eff4ff;
+  --blue-mid: #93b4f8;
+  --navy: #1e3a6e;
+  --teal: #0891b2;
+  --green: #059669;
+  --amber: #d97706;
+  --red: #dc2626;
+  --purple: #7c3aed;
+  --text: #1a2236;
+  --text2: #4b5773;
+  --text3: #8a94a8;
+  --shadow: 0 1px 4px rgba(30,58,110,0.08), 0 4px 16px rgba(30,58,110,0.04);
+  --shadow-md: 0 4px 24px rgba(30,58,110,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 58px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 8px rgba(30,58,110,0.06);
+}
+
+.header-left { display: flex; align-items: center; gap: 20px; }
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal));
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+}
+.logo-icon svg { width: 18px; height: 18px; fill: white; }
+.logo-title { font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; }
+.logo-sub { font-size: 10px; color: var(--text3); font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; }
+
+.divider-v { width: 1px; height: 28px; background: var(--border); }
+
+.tabs { display: flex; gap: 2px; }
+.tab-btn {
+  padding: 7px 18px; border-radius: 7px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+  background: transparent; color: var(--text2); transition: all 0.18s;
+}
+.tab-btn:hover { background: var(--blue-light); color: var(--blue); }
+.tab-btn.active { background: var(--blue); color: white; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+.filter-toggle-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--blue);
+  background: var(--blue-light); color: var(--blue); cursor: pointer;
+  font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  transition: all 0.18s;
+}
+.filter-toggle-btn:hover { background: var(--blue); color: white; }
+.filter-toggle-btn svg { width: 14px; height: 14px; }
+.filter-badge {
+  background: var(--blue); color: white; font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 10px; display: none;
+}
+.filter-badge.show { display: inline-block; }
+
+.date-chip {
+  padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; font-size: 11px; color: var(--text2); font-weight: 500;
+}
+
+/* ── FILTER PANEL ── */
+.filter-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.3);
+  z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.22s;
+}
+.filter-overlay.open { opacity: 1; pointer-events: all; }
+
+.filter-panel {
+  position: fixed; top: 0; right: -420px; width: 420px; height: 100vh;
+  background: var(--surface); z-index: 400; transition: right 0.28s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column; box-shadow: var(--shadow-md);
+}
+.filter-panel.open { right: 0; }
+
+.filter-header {
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.filter-header-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+.filter-actions { display: flex; gap: 8px; }
+.btn-clear {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--text2); cursor: pointer;
+  font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+}
+.btn-apply {
+  padding: 6px 16px; border-radius: 6px; border: none;
+  background: var(--blue); color: white; cursor: pointer;
+  font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+}
+.btn-close {
+  width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 18px; line-height: 1;
+}
+
+.filter-body { flex: 1; overflow-y: auto; padding: 16px; }
+.filter-body::-webkit-scrollbar { width: 4px; }
+.filter-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.filter-group { margin-bottom: 10px; }
+.filter-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--surface2); border-radius: 8px;
+  cursor: pointer; border: 1px solid var(--border); transition: all 0.15s;
+  user-select: none;
+}
+.filter-group-header:hover { background: var(--blue-light); border-color: var(--blue-mid); }
+.filter-group-header.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.filter-group-label { font-size: 12px; font-weight: 600; color: var(--text); }
+.filter-group-meta { display: flex; align-items: center; gap: 8px; }
+.filter-count-badge {
+  background: var(--blue); color: white; font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 10px; display: none;
+}
+.filter-count-badge.show { display: inline-block; }
+.filter-chevron { width: 16px; height: 16px; color: var(--text3); transition: transform 0.2s; }
+.filter-group-header.open .filter-chevron { transform: rotate(180deg); }
+
+.filter-dropdown {
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 8px 8px; background: var(--surface);
+  overflow: hidden; max-height: 0; transition: max-height 0.22s ease;
+}
+.filter-dropdown.open { max-height: 260px; overflow-y: auto; }
+.filter-search {
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+}
+.filter-search input {
+  width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text);
+  background: var(--surface2); outline: none;
+}
+.filter-search input:focus { border-color: var(--blue); }
+.filter-option {
+  display: flex; align-items: center; gap: 9px; padding: 8px 14px;
+  cursor: pointer; transition: background 0.12s;
+}
+.filter-option:hover { background: var(--blue-light); }
+.filter-option input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--blue); cursor: pointer; }
+.filter-option label { font-size: 12px; color: var(--text); cursor: pointer; flex: 1; }
+
+.chips-area { padding: 10px 0 4px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 10px; background: var(--blue-light); border-radius: 20px;
+  font-size: 11px; color: var(--blue); font-weight: 500; border: 1px solid var(--blue-mid);
+}
+.chip-remove {
+  cursor: pointer; font-size: 13px; line-height: 1; color: var(--blue);
+  background: none; border: none; padding: 0;
+}
+
+/* ── MAIN CONTENT ── */
+.main { padding: 20px 24px; max-width: 1900px; margin: 0 auto; }
+
+.dashboard { display: none; }
+.dashboard.active { display: block; }
+
+/* ── TOGGLE BAR ── */
+.toggle-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+.toggle-group { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.toggle-btn {
+  padding: 5px 14px; border-radius: 6px; border: none; cursor: pointer;
+  font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+  background: transparent; color: var(--text2); transition: all 0.15s;
+}
+.toggle-btn.active { background: var(--blue); color: white; }
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; gap: 14px; margin-bottom: 18px; }
+.kpi-row.eight { grid-template-columns: repeat(8, 1fr); }
+.kpi-row.six { grid-template-columns: repeat(6, 1fr); }
+
+.kpi-card {
+  background: var(--surface); border-radius: var(--radius); padding: 16px 18px;
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  position: relative; overflow: hidden; transition: box-shadow 0.18s;
+}
+.kpi-card:hover { box-shadow: var(--shadow-md); }
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.kpi-card.blue::before { background: var(--blue); }
+.kpi-card.teal::before { background: var(--teal); }
+.kpi-card.green::before { background: var(--green); }
+.kpi-card.amber::before { background: var(--amber); }
+.kpi-card.red::before { background: var(--red); }
+.kpi-card.purple::before { background: var(--purple); }
+.kpi-card.navy::before { background: var(--navy); }
+
+.kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; font-family: 'DM Mono', monospace; }
+.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
+.kpi-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+}
+.kpi-badge.up { background: #d1fae5; color: #059669; }
+.kpi-badge.dn { background: #fee2e2; color: #dc2626; }
+
+.kpi-icon {
+  position: absolute; right: 14px; top: 14px;
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.kpi-icon.blue { background: #eff4ff; color: var(--blue); }
+.kpi-icon.teal { background: #ecfeff; color: var(--teal); }
+.kpi-icon.green { background: #d1fae5; color: var(--green); }
+.kpi-icon.amber { background: #fef3c7; color: var(--amber); }
+.kpi-icon.red { background: #fee2e2; color: var(--red); }
+.kpi-icon.purple { background: #ede9fe; color: var(--purple); }
+.kpi-icon svg { width: 18px; height: 18px; }
+
+/* ── PIPELINE ── */
+.pipeline-card {
+  background: var(--surface); border-radius: var(--radius); padding: 18px 24px;
+  border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 18px;
+}
+.pipeline-title { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 16px; }
+.pipeline { display: flex; align-items: center; gap: 0; overflow-x: auto; }
+.pipeline-stage {
+  flex: 1; min-width: 100px; text-align: center; padding: 12px 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  position: relative; cursor: pointer; transition: all 0.18s;
+  border-radius: 0; margin-right: 0;
+}
+.pipeline-stage:first-child { border-radius: 10px 0 0 10px; }
+.pipeline-stage:last-child { border-radius: 0 10px 10px 0; }
+.pipeline-stage:hover { background: var(--blue-light); border-color: var(--blue-mid); z-index: 1; }
+.pipeline-stage.active { background: var(--blue); border-color: var(--blue); }
+.pipeline-stage.active .ps-label { color: white; }
+.pipeline-stage.active .ps-count { color: white; }
+.pipeline-stage.active .ps-pct { color: rgba(255,255,255,0.75); }
+.ps-label { font-size: 11px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.4px; }
+.ps-count { font-size: 20px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; margin: 4px 0; }
+.ps-pct { font-size: 11px; color: var(--text3); }
+.pipeline-arrow {
+  width: 0; height: 0; flex-shrink: 0;
+  border-top: 22px solid transparent; border-bottom: 22px solid transparent;
+  border-left: 14px solid var(--border); position: relative; z-index: 2;
+  margin: 0 -1px;
+}
+.pipeline-arrow::before {
+  content: ''; position: absolute; top: -22px; left: -16px;
+  border-top: 22px solid transparent; border-bottom: 22px solid transparent;
+  border-left: 14px solid var(--surface2);
+}
+
+/* ── CHARTS GRID ── */
+.charts-grid { display: grid; gap: 16px; margin-bottom: 16px; }
+.charts-grid.two { grid-template-columns: 1fr 1fr; }
+.charts-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.charts-grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.charts-grid.cols-3-2 { grid-template-columns: 3fr 2fr; }
+.charts-grid.cols-2-3 { grid-template-columns: 2fr 3fr; }
+
+.chart-card {
+  background: var(--surface); border-radius: var(--radius); padding: 18px 20px;
+  border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden;
+}
+.chart-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+}
+.chart-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.chart-subtitle { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.chart-actions { display: flex; gap: 4px; }
+.chart-btn {
+  padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text2); cursor: pointer;
+  font-size: 11px; font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+}
+.chart-btn.active, .chart-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* ── TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  background: var(--surface2); padding: 8px 12px;
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  text-align: left; border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.data-table td {
+  padding: 9px 12px; font-size: 12px; color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--blue-light); }
+.badge-open { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.badge-closed { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.badge-pending { background: #ede9fe; color: #4c1d95; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+
+/* ── GAUGE ── */
+.gauge-wrap { display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.gauge-value { font-size: 28px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; }
+.gauge-label { font-size: 11px; color: var(--text3); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1400px) {
+  .kpi-row.eight { grid-template-columns: repeat(4, 1fr); }
+  .charts-grid.four { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 1100px) {
+  .charts-grid.three { grid-template-columns: 1fr 1fr; }
+  .charts-grid.cols-3-2, .charts-grid.cols-2-3 { grid-template-columns: 1fr; }
+}
+
+.no-data { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text3); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      </div>
+      <div>
+        <div class="logo-title">P2P Intelligence Hub</div>
+        <div class="logo-sub">Procurement Analytics</div>
+      </div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchDash('pr')">Open PR – SPR</button>
+      <button class="tab-btn" onclick="switchDash('po')">Closed PR–PO</button>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date-chip">FY 2024–25 &nbsp;|&nbsp; Apr–Mar</div>
+    <button class="filter-toggle-btn" onclick="openFilter()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+      Filters
+      <span class="filter-badge" id="filterBadge">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- FILTER OVERLAY + PANEL -->
+<div class="filter-overlay" id="filterOverlay" onclick="closeFilter()"></div>
+<div class="filter-panel" id="filterPanel">
+  <div class="filter-header">
+    <div class="filter-header-title">Smart Filters</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="filter-actions">
+        <button class="btn-clear" onclick="clearFilters()">Clear All</button>
+        <button class="btn-apply" onclick="applyFilters()">Apply</button>
+      </div>
+      <button class="btn-close" onclick="closeFilter()">×</button>
+    </div>
+  </div>
+  <div class="filter-body" id="filterBody">
+    <!-- filter groups injected by JS -->
+  </div>
+  <div style="padding:12px 16px;border-top:1px solid var(--border);">
+    <div class="chips-area" id="chipsArea"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ═══════════════════════════ DASHBOARD 1: OPEN PR ═══════════════════════════ -->
+  <div class="dashboard active" id="dash-pr">
+
+    <div class="toggle-bar">
+      <div class="section-title">Open PR – SPR Dashboard</div>
+      <div class="toggle-group">
+        <button class="toggle-btn active" onclick="toggleMetric('pr','count',this)">Count</button>
+        <button class="toggle-btn" onclick="toggleMetric('pr','value',this)">Value (₹ L)</button>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-row eight" id="prKpiRow">
+      <div class="kpi-card blue">
+        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg></div>
+        <div class="kpi-label">Total PRs</div>
+        <div class="kpi-value" id="kpi-total-pr">1,284</div>
+        <div class="kpi-sub"><span class="kpi-badge up">↑ 8.4%</span> vs last month</div>
+      </div>
+      <div class="kpi-card teal">
+        <div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+        <div class="kpi-label">Total PR Value</div>
+        <div class="kpi-value" id="kpi-pr-value">₹ 842 Cr</div>
+        <div class="kpi-sub"><span class="kpi-badge up">↑ 12.1%</span> YoY</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+        <div class="kpi-label">Open PR %</div>
+        <div class="kpi-value" id="kpi-open-pct">63.2%</div>
+        <div class="kpi-sub">812 Open PRs</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg></div>
+        <div class="kpi-label">Closed PR %</div>
+        <div class="kpi-value" id="kpi-closed-pct">36.8%</div>
+        <div class="kpi-sub">472 Closed PRs</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div>
+        <div class="kpi-label">Open PR Value</div>
+        <div class="kpi-value" id="kpi-open-val">₹ 532 Cr</div>
+        <div class="kpi-sub">63.2% of total</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon red"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+        <div class="kpi-label">365 Days PR</div>
+        <div class="kpi-value" id="kpi-365">87</div>
+        <div class="kpi-sub"><span class="kpi-badge dn">↑ Critical</span></div>
+      </div>
+      <div class="kpi-card navy">
+        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg></div>
+        <div class="kpi-label">Low Value PR Count</div>
+        <div class="kpi-value" id="kpi-lv-count">326</div>
+        <div class="kpi-sub">₹ 48.2 Cr (0–3L)</div>
+      </div>
+      <div class="kpi-card teal">
+        <div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg></div>
+        <div class="kpi-label">Low Value PR Value</div>
+        <div class="kpi-value" id="kpi-lv-val">₹ 48.2 L</div>
+        <div class="kpi-sub">25.4% of PRs</div>
+      </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="pipeline-card">
+      <div class="pipeline-title">Process Pipeline Flow</div>
+      <div class="pipeline" id="prPipeline"></div>
+    </div>
+
+    <!-- CHARTS ROW 1 -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">PR Category Distribution</div><div class="chart-subtitle">Count & Value by Category</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchChart('prCategory','count',this)">Count</button>
+            <button class="chart-btn" onclick="switchChart('prCategory','value',this)">Value</button>
+          </div>
+        </div>
+        <div id="prCategoryChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">PR Inflow vs PO Outflow</div><div class="chart-subtitle">Monthly trend comparison</div></div>
+        </div>
+        <div id="prInflowChart"></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="charts-grid three">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">Monthly split</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchChart('prCapex','count',this)">Count</button>
+            <button class="chart-btn" onclick="switchChart('prCapex','value',this)">Value</button>
+          </div>
+        </div>
+        <div id="prCapexChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Ageing Distribution</div><div class="chart-subtitle">Open PRs by bucket</div></div>
+        </div>
+        <div id="prAgeingChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Value Bucket Distribution</div><div class="chart-subtitle">PR count by value range</div></div>
+        </div>
+        <div id="prValueBucketChart"></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 3 -->
+    <div class="charts-grid cols-2-3">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Location-wise PR</div><div class="chart-subtitle">Count & Value by plant location</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchChart('prLocation','count',this)">Count</button>
+            <button class="chart-btn" onclick="switchChart('prLocation','value',this)">Value</button>
+          </div>
+        </div>
+        <div id="prLocationChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Month-wise Open vs Closed</div><div class="chart-subtitle">Summary table</div></div>
+        </div>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
+          <table class="data-table" id="prMonthTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 4 -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Material Group Distribution</div><div class="chart-subtitle">PR Value share by material group</div></div>
+        </div>
+        <div id="prMaterialChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Buyer Performance</div><div class="chart-subtitle">PR handled per buyer</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchBuyerView('pr','top',this)">Top 10</button>
+            <button class="chart-btn" onclick="switchBuyerView('pr','bottom',this)">Bottom 10</button>
+          </div>
+        </div>
+        <div id="prBuyerChart"></div>
+      </div>
+    </div>
+
+  </div><!-- end dash-pr -->
+
+  <!-- ═══════════════════════════ DASHBOARD 2: CLOSED PO ═══════════════════════════ -->
+  <div class="dashboard" id="dash-po">
+
+    <div class="toggle-bar">
+      <div class="section-title">Closed PR–PO Dashboard</div>
+      <div class="toggle-group">
+        <button class="toggle-btn active" onclick="toggleMetric('po','count',this)">Count</button>
+        <button class="toggle-btn" onclick="toggleMetric('po','value',this)">Value (₹ L)</button>
+      </div>
+    </div>
+
+    <!-- KPI ROW 1 -->
+    <div class="kpi-row six">
+      <div class="kpi-card blue">
+        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+        <div class="kpi-label">Total POs</div>
+        <div class="kpi-value" id="kpi-total-po">947</div>
+        <div class="kpi-sub"><span class="kpi-badge up">↑ 6.2%</span> vs last FY</div>
+      </div>
+      <div class="kpi-card teal">
+        <div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
+        <div class="kpi-label">PO Items</div>
+        <div class="kpi-value" id="kpi-po-items">3,842</div>
+        <div class="kpi-sub">Avg 4.06 items/PO</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+        <div class="kpi-label">PO Value</div>
+        <div class="kpi-value" id="kpi-po-value">₹ 684 Cr</div>
+        <div class="kpi-sub"><span class="kpi-badge up">↑ 9.8%</span> YoY</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg></div>
+        <div class="kpi-label">Avg TAT (Days)</div>
+        <div class="kpi-value" id="kpi-avg-tat">18.4</div>
+        <div class="kpi-sub"><span class="kpi-badge dn">↑ 1.2d</span> vs target 17d</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+        <div class="kpi-label">Avg Monthly POs</div>
+        <div class="kpi-value" id="kpi-monthly-po">78.9</div>
+        <div class="kpi-sub">Per month avg</div>
+      </div>
+      <div class="kpi-card navy">
+        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div>
+        <div class="kpi-label">Avg Monthly Value</div>
+        <div class="kpi-value" id="kpi-monthly-val">₹ 57 Cr</div>
+        <div class="kpi-sub">Per month avg</div>
+      </div>
+    </div>
+
+    <!-- KPI ROW 2 -->
+    <div class="kpi-row six">
+      <div class="kpi-card teal">
+        <div class="kpi-label">Avg Value per PO</div>
+        <div class="kpi-value">₹ 72.2 L</div>
+        <div class="kpi-sub">Across all POs</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Avg Items per PO</div>
+        <div class="kpi-value">4.06</div>
+        <div class="kpi-sub">Line items avg</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Low Value PO %</div>
+        <div class="kpi-value">22.4%</div>
+        <div class="kpi-sub">212 POs below ₹3L</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Domestic Count</div>
+        <div class="kpi-value">718</div>
+        <div class="kpi-sub">75.8% of total POs</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Import Count</div>
+        <div class="kpi-value">229</div>
+        <div class="kpi-sub">₹ 284 Cr (41.5%)</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Active Vendors</div>
+        <div class="kpi-value">184</div>
+        <div class="kpi-sub">12 countries</div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 1 -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">PO Category Distribution</div><div class="chart-subtitle">Count & Value by Category</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchChart('poCategory','count',this)">Count</button>
+            <button class="chart-btn" onclick="switchChart('poCategory','value',this)">Value</button>
+          </div>
+        </div>
+        <div id="poCategoryChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">TAT Breakdown by Stage</div><div class="chart-subtitle">Average days per process stage</div></div>
+        </div>
+        <div id="poTatChart"></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Monthly PO Trend</div><div class="chart-subtitle">Count & Value over 12 months</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchChart('poMonthly','count',this)">Count</button>
+            <button class="chart-btn" onclick="switchChart('poMonthly','value',this)">Value</button>
+          </div>
+        </div>
+        <div id="poMonthlyChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Monthly TAT Trend</div><div class="chart-subtitle">Average TAT in days per month</div></div>
+        </div>
+        <div id="poTatTrendChart"></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 3 -->
+    <div class="charts-grid three">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">PO value split monthly</div></div>
+        </div>
+        <div id="poCapexChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Country Exposure</div><div class="chart-subtitle">PO value % by country</div></div>
+        </div>
+        <div id="poCountryChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Currency Exposure</div><div class="chart-subtitle">PO value % by currency</div></div>
+        </div>
+        <div id="poCurrencyChart"></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 4 -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Location-wise PO</div><div class="chart-subtitle">Distribution by plant/location</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchChart('poLocation','count',this)">Count</button>
+            <button class="chart-btn" onclick="switchChart('poLocation','value',this)">Value</button>
+          </div>
+        </div>
+        <div id="poLocationChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Value Bucket Distribution</div><div class="chart-subtitle">PO count by value range</div></div>
+        </div>
+        <div id="poValueBucketChart"></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 5 -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Buyer Ranking</div><div class="chart-subtitle">POs closed per buyer</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchBuyerView('po','top',this)">Top 10</button>
+            <button class="chart-btn" onclick="switchBuyerView('po','bottom',this)">Bottom 10</button>
+          </div>
+        </div>
+        <div id="poBuyerChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Vendor Ranking</div><div class="chart-subtitle">PO value by vendor</div></div>
+          <div class="chart-actions">
+            <button class="chart-btn active" onclick="switchVendorView('top',this)">Top 10</button>
+            <button class="chart-btn" onclick="switchVendorView('bottom',this)">Bottom 10</button>
+          </div>
+        </div>
+        <div id="poVendorChart"></div>
+      </div>
+    </div>
+
+    <!-- MATERIAL GROUP -->
+    <div class="charts-grid two">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Material Group – Value %</div><div class="chart-subtitle">PO value distribution by material group</div></div>
+        </div>
+        <div id="poMaterialChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div><div class="chart-title">Material Group Ranking</div><div class="chart-subtitle">Top material groups by PO value</div></div>
+        </div>
+        <div id="poMaterialRankChart"></div>
+      </div>
+    </div>
+
+  </div><!-- end dash-po -->
+</div><!-- end main -->
+
+<script>
+// ════════════════════════════════════════════════
+//  DATA GENERATION
+// ════════════════════════════════════════════════
+const months = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+const buyers = ['Rahul Sharma','Priya Nair','Amit Patel','Sneha Kulkarni','Vikram Menon','Deepa Iyer','Suresh Rao','Anjali Singh','Kiran Gupta','Rohit Das','Meera Joshi','Arjun Kumar','Pooja Verma','Naveen Reddy','Divya Bhat'];
+const categories = ['Civil Works','Electrical','Mechanical','IT Hardware','IT Software','Furniture','Raw Material','Chemicals','Safety Equipment','MRO','Spare Parts','Instrumentation','HVAC','Piping','Structural Steel'];
+const plants = ['Plant A','Plant B','Plant C','Plant D','Plant E'];
+const locations = ['Mumbai','Pune','Ahmedabad','Chennai','Hyderabad','Bengaluru','Kolkata','Delhi','Surat','Nagpur'];
+const vendors = ['Larsen & Toubro','Siemens India','ABB Ltd','Honeywell Automation','BHEL','Thermax Ltd','Kirloskar Brothers','Tata Projects','Essar Projects','Forbes Marshall','Alfa Laval','Atlas Copco','Ingersoll Rand','Parker Hannifin','Emerson Electric','Bosch Rexroth','Danfoss','Grundfos','Spirent Comms','GE India'];
+const materials = ['Electrical Items','Mechanical Spares','Civil Materials','IT Equipment','Chemicals','Instruments','Safety Gear','HVAC Parts','Structural Steel','Piping Material','Consumables','Fasteners','Valves','Pumps','Compressors'];
+const countries = ['India','Germany','USA','China','Japan','South Korea','UK','Italy','France','Singapore'];
+const currencies = ['INR','USD','EUR','JPY','GBP','SGD','CNY'];
+const doa = ['Level 1 (< 10L)','Level 2 (10-50L)','Level 3 (50-200L)','Level 4 (200L-1Cr)','Level 5 (>1Cr)'];
+const incoterms = ['CIF','FOB','EXW','DAP','DDP','CFR','FCA'];
+const valueBuckets = ['0–3L','3–10L','10–25L','25–50L','50L–1Cr','>1Cr'];
+const ageingBuckets = ['0–30 Days','31–60 Days','61–90 Days','91–180 Days','181–365 Days','>365 Days'];
+const prStatuses = ['Open','In Progress','Pending Approval','On Hold','Cancelled'];
+const intStatuses = ['RFQ Stage','Offer Received','TR Raised','RA Completed','NFA Issued','PO Created'];
+
+// PR dummy data
+const prData = [];
+for(let i=0;i<1284;i++){
+  const m = months[Math.floor(Math.random()*12)];
+  prData.push({
+    id:'PR'+String(10000+i),
+    buyer: buyers[Math.floor(Math.random()*buyers.length)],
+    category: categories[Math.floor(Math.random()*categories.length)],
+    plant: plants[Math.floor(Math.random()*plants.length)],
+    location: locations[Math.floor(Math.random()*locations.length)],
+    material: materials[Math.floor(Math.random()*materials.length)],
+    month: m,
+    status: prStatuses[Math.floor(Math.random()*prStatuses.length)],
+    intStatus: intStatuses[Math.floor(Math.random()*intStatuses.length)],
+    ageing: ageingBuckets[Math.floor(Math.random()*ageingBuckets.length)],
+    valueBucket: valueBuckets[Math.floor(Math.random()*valueBuckets.length)],
+    value: Math.round((Math.random()*200+1)*100)/100,
+    capex: Math.random()>0.4,
+  });
+}
+
+// PO dummy data
+const poData = [];
+for(let i=0;i<947;i++){
+  const m = months[Math.floor(Math.random()*12)];
+  poData.push({
+    id:'PO'+String(20000+i),
+    buyer: buyers[Math.floor(Math.random()*buyers.length)],
+    category: categories[Math.floor(Math.random()*categories.length)],
+    plant: plants[Math.floor(Math.random()*plants.length)],
+    location: locations[Math.floor(Math.random()*locations.length)],
+    material: materials[Math.floor(Math.random()*materials.length)],
+    vendor: vendors[Math.floor(Math.random()*vendors.length)],
+    country: countries[Math.floor(Math.random()*countries.length)],
+    currency: currencies[Math.floor(Math.random()*currencies.length)],
+    doa: doa[Math.floor(Math.random()*doa.length)],
+    incoterm: incoterms[Math.floor(Math.random()*incoterms.length)],
+    month: m,
+    valueBucket: valueBuckets[Math.floor(Math.random()*valueBuckets.length)],
+    value: Math.round((Math.random()*250+5)*100)/100,
+    capex: Math.random()>0.45,
+    tat: Math.round(Math.random()*30+5),
+    items: Math.round(Math.random()*8+1),
+  });
+}
+
+// ════════════════════════════════════════════════
+//  FILTER STATE
+// ════════════════════════════════════════════════
+const filterDefs = {
+  pr: [
+    {key:'buyer', label:'PR Created / Buyer', opts: buyers},
+    {key:'category', label:'PR Category', opts: categories},
+    {key:'plant', label:'Plant Code', opts: plants},
+    {key:'location', label:'Location', opts: locations},
+    {key:'month', label:'PR Release Month', opts: months},
+    {key:'status', label:'PR Status', opts: prStatuses},
+    {key:'intStatus', label:'Intermediate Status', opts: intStatuses},
+    {key:'ageing', label:'Ageing Bucket', opts: ageingBuckets},
+    {key:'material', label:'Material Group', opts: materials},
+    {key:'valueBucket', label:'Value Bucket', opts: valueBuckets},
+  ],
+  po: [
+    {key:'buyer', label:'Buyer', opts: buyers},
+    {key:'category', label:'PO Category', opts: categories},
+    {key:'plant', label:'Plant', opts: plants},
+    {key:'location', label:'Location', opts: locations},
+    {key:'month', label:'PO Date (Month)', opts: months},
+    {key:'material', label:'Material Group', opts: materials},
+    {key:'valueBucket', label:'Value Bucket', opts: valueBuckets},
+    {key:'doa', label:'DOA Clause', opts: doa},
+    {key:'incoterm', label:'Incoterms', opts: incoterms},
+    {key:'country', label:'Country', opts: countries},
+    {key:'vendor', label:'Vendor', opts: vendors},
+  ]
+};
+
+let currentDash = 'pr';
+let filterSelections = {}; // {key: Set of selected values}
+let chartInstances = {};
+let chartModes = {}; // track count/value toggle per chart
+
+function getActiveDefs() { return filterDefs[currentDash]; }
+function getActiveData() { return currentDash==='pr' ? prData : poData; }
+
+function getFilteredData() {
+  return getActiveData().filter(row => {
+    for(const def of getActiveDefs()) {
+      const sel = filterSelections[def.key];
+      if(sel && sel.size>0 && !sel.has(row[def.key])) return false;
+    }
+    return true;
+  });
+}
+
+// ════════════════════════════════════════════════
+//  FILTER PANEL
+// ════════════════════════════════════════════════
+function buildFilterPanel() {
+  const body = document.getElementById('filterBody');
+  body.innerHTML = '';
+  filterSelections = {};
+  getActiveDefs().forEach(def => {
+    filterSelections[def.key] = new Set();
+    const grp = document.createElement('div');
+    grp.className = 'filter-group';
+    grp.innerHTML = `
+      <div class="filter-group-header" onclick="toggleGroup(this,'${def.key}')">
+        <span class="filter-group-label">${def.label}</span>
+        <div class="filter-group-meta">
+          <span class="filter-count-badge" id="badge-${def.key}">0</span>
+          <svg class="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="filter-dropdown" id="drop-${def.key}">
+        <div class="filter-search"><input type="text" placeholder="Search..." oninput="searchFilter(this,'${def.key}')"></div>
+        <div id="opts-${def.key}">
+          ${def.opts.map(o=>`<div class="filter-option"><input type="checkbox" id="cb-${def.key}-${o.replace(/\s/g,'_')}" value="${o}" onchange="toggleFilter('${def.key}','${o}',this.checked)"><label for="cb-${def.key}-${o.replace(/\s/g,'_')}">${o}</label></div>`).join('')}
+        </div>
+      </div>
+    `;
+    body.appendChild(grp);
+  });
+}
+
+function toggleGroup(hdr, key) {
+  const isOpen = hdr.classList.contains('open');
+  // close all
+  document.querySelectorAll('.filter-group-header.open').forEach(h=>h.classList.remove('open'));
+  document.querySelectorAll('.filter-dropdown.open').forEach(d=>d.classList.remove('open'));
+  if(!isOpen) {
+    hdr.classList.add('open');
+    document.getElementById('drop-'+key).classList.add('open');
+  }
+}
+
+function searchFilter(input, key) {
+  const q = input.value.toLowerCase();
+  document.querySelectorAll(`#opts-${key} .filter-option`).forEach(opt => {
+    const lbl = opt.querySelector('label').textContent.toLowerCase();
+    opt.style.display = lbl.includes(q) ? '' : 'none';
+  });
+}
+
+function toggleFilter(key, val, checked) {
+  if(checked) filterSelections[key].add(val);
+  else filterSelections[key].delete(val);
+  updateBadge(key);
+  updateGlobalBadge();
+  renderChips();
+}
+
+function updateBadge(key) {
+  const badge = document.getElementById('badge-'+key);
+  const cnt = filterSelections[key].size;
+  badge.textContent = cnt;
+  badge.classList.toggle('show', cnt>0);
+}
+
+function updateGlobalBadge() {
+  let total = 0;
+  Object.values(filterSelections).forEach(s=>total+=s.size);
+  const fb = document.getElementById('filterBadge');
+  fb.textContent = total;
+  fb.classList.toggle('show', total>0);
+}
+
+function renderChips() {
+  const area = document.getElementById('chipsArea');
+  area.innerHTML = '';
+  getActiveDefs().forEach(def => {
+    filterSelections[def.key] && filterSelections[def.key].forEach(val => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `<span>${val}</span><button class="chip-remove" onclick="removeChip('${def.key}','${val}')">×</button>`;
+      area.appendChild(chip);
+    });
+  });
+}
+
+function removeChip(key, val) {
+  filterSelections[key].delete(val);
+  const cb = document.getElementById(`cb-${key}-${val.replace(/\s/g,'_')}`);
+  if(cb) cb.checked = false;
+  updateBadge(key);
+  updateGlobalBadge();
+  renderChips();
+}
+
+function clearFilters() {
+  getActiveDefs().forEach(def => {
+    filterSelections[def.key] = new Set();
+    document.querySelectorAll(`#opts-${def.key} input[type=checkbox]`).forEach(cb=>cb.checked=false);
+    updateBadge(def.key);
+  });
+  updateGlobalBadge();
+  renderChips();
+}
+
+function applyFilters() {
+  closeFilter();
+  renderAllCharts();
+}
+
+function openFilter() {
+  document.getElementById('filterPanel').classList.add('open');
+  document.getElementById('filterOverlay').classList.add('open');
+}
+
+function closeFilter() {
+  document.getElementById('filterPanel').classList.remove('open');
+  document.getElementById('filterOverlay').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════
+//  DASHBOARD SWITCH
+// ════════════════════════════════════════════════
+function switchDash(dash) {
+  currentDash = dash;
+  document.querySelectorAll('.dashboard').forEach(d=>d.classList.remove('active'));
+  document.getElementById('dash-'+dash).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(dash==='pr'&&i===0)||(dash==='po'&&i===1));
+  });
+  buildFilterPanel();
+  renderAllCharts();
+}
+
+// ════════════════════════════════════════════════
+//  TOGGLE METRIC
+// ════════════════════════════════════════════════
+function toggleMetric(dash, mode, btn) {
+  btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+//  CHART HELPERS
+// ════════════════════════════════════════════════
+function switchChart(chartId, mode, btn) {
+  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  chartModes[chartId] = mode;
+  if(chartId==='prCategory') renderPrCategoryChart(mode);
+  if(chartId==='prCapex') renderPrCapexChart(mode);
+  if(chartId==='prLocation') renderPrLocationChart(mode);
+  if(chartId==='poCategory') renderPoCategoryChart(mode);
+  if(chartId==='poMonthly') renderPoMonthlyChart(mode);
+  if(chartId==='poLocation') renderPoLocationChart(mode);
+}
+
+function switchBuyerView(dash, mode, btn) {
+  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(dash==='pr') renderPrBuyerChart(mode);
+  else renderPoBuyerChart(mode);
+}
+
+function switchVendorView(mode, btn) {
+  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPoVendorChart(mode);
+}
+
+function destroyChart(id) {
+  if(chartInstances[id]) { try{chartInstances[id].destroy();}catch(e){} chartInstances[id]=null; }
+}
+
+function renderApex(id, opts) {
+  destroyChart(id);
+  const el = document.getElementById(id);
+  if(!el) return;
+  chartInstances[id] = new ApexCharts(el, opts);
+  chartInstances[id].render();
+}
+
+const palette = ['#2563eb','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#1e3a6e','#0d9488','#b45309','#9333ea','#0f766e','#1d4ed8','#065f46','#92400e','#7f1d1d'];
+const palette2 = ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#1e40af','#14b8a6','#d97706','#a855f7'];
+
+// ════════════════════════════════════════════════
+//  PR DASHBOARD CHARTS
+// ════════════════════════════════════════════════
+function renderAllCharts() {
+  if(currentDash==='pr') renderPrCharts();
+  else renderPoCharts();
+}
+
+function renderPrCharts() {
+  const data = getFilteredData();
+  renderPrPipeline(data);
+  renderPrCategoryChart('count',data);
+  renderPrInflowChart(data);
+  renderPrCapexChart('count',data);
+  renderPrAgeingChart(data);
+  renderPrValueBucketChart(data);
+  renderPrLocationChart('count',data);
+  renderPrMonthTable(data);
+  renderPrMaterialChart(data);
+  renderPrBuyerChart('top',data);
+}
+
+function renderPrPipeline(data) {
+  data = data || getFilteredData();
+  const stages = [
+    {label:'PR', count: data.length},
+    {label:'RFQ', count: Math.round(data.length*0.82)},
+    {label:'Offer', count: Math.round(data.length*0.71)},
+    {label:'TR', count: Math.round(data.length*0.62)},
+    {label:'RA', count: Math.round(data.length*0.54)},
+    {label:'NFA', count: Math.round(data.length*0.48)},
+    {label:'PO', count: Math.round(data.length*0.37)},
+  ];
+  const el = document.getElementById('prPipeline');
+  if(!el) return;
+  el.innerHTML = '';
+  stages.forEach((s,i) => {
+    if(i>0) {
+      const arr = document.createElement('div');
+      arr.className = 'pipeline-arrow';
+      el.appendChild(arr);
+    }
+    const stage = document.createElement('div');
+    stage.className = 'pipeline-stage'+(i===0?' active':'');
+    stage.innerHTML = `<div class="ps-label">${s.label}</div><div class="ps-count">${s.count.toLocaleString()}</div><div class="ps-pct">${stages[0].count>0?Math.round(s.count/stages[0].count*100):0}%</div>`;
+    stage.onclick = function() {
+      document.querySelectorAll('#prPipeline .pipeline-stage').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+    };
+    el.appendChild(stage);
+  });
+}
+
+function aggBy(data, key, valKey) {
+  const map = {};
+  data.forEach(r => {
+    const k = r[key]||'Unknown';
+    if(!map[k]) map[k]={count:0,value:0};
+    map[k].count++;
+    map[k].value+=r[valKey||'value']||0;
+  });
+  return map;
+}
+
+function renderPrCategoryChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'category');
+  const cats = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count).slice(0,10);
+  const vals = cats.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value*100)/100);
+  renderApex('prCategoryChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'Count':'Value (L)',data:vals}],
+    xaxis:{categories:cats,labels:{style:{fontSize:'10px'},rotate:-30}},
+    colors:[palette[0]],
+    dataLabels:{enabled:false},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v+'L':v}},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
+  });
+}
+
+function renderPrInflowChart(data) {
+  data = data || getFilteredData();
+  const inflow = months.map(m=>data.filter(r=>r.month===m).length);
+  const outflow = months.map((m,i)=>Math.round(inflow[i]*0.37*((Math.random()*0.3)+0.85)));
+  renderApex('prInflowChart', {
+    chart:{type:'line',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[
+      {name:'PR Inflow',type:'area',data:inflow},
+      {name:'PO Outflow',type:'line',data:outflow}
+    ],
+    stroke:{width:[2,2],curve:'smooth',dashArray:[0,4]},
+    fill:{type:['gradient','solid'],gradient:{opacityFrom:0.4,opacityTo:0.05}},
+    colors:[palette[0],palette[2]],
+    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    tooltip:{shared:true},
+    legend:{position:'top',fontSize:'11px'},
+    markers:{size:[0,4]},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
+  });
+}
+
+function renderPrCapexChart(mode, data) {
+  data = data || getFilteredData();
+  const capex = months.map(m=>{
+    const d=data.filter(r=>r.month===m&&r.capex);
+    return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));
+  });
+  const opex = months.map(m=>{
+    const d=data.filter(r=>r.month===m&&!r.capex);
+    return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));
+  });
+  renderApex('prCapexChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans',stacked:false},
+    series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],
+    colors:[palette[0],palette[2]],
+    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:3,columnWidth:'55%'}},
+    dataLabels:{enabled:false},
+    legend:{position:'top',fontSize:'11px'},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
+  });
+}
+
+function renderPrAgeingChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'ageing');
+  const cnts = ageingBuckets.map(b=>agg[b]?agg[b].count:0);
+  const colors = [palette[2],palette[3],palette[0],palette[6],palette[4],palette[4]];
+  renderApex('prAgeingChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:'PRs',data:cnts}],
+    colors:[...colors],
+    xaxis:{categories:ageingBuckets,labels:{style:{fontSize:'10px'},rotate:-20}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:4,distributed:true,columnWidth:'60%'}},
+    dataLabels:{enabled:false},
+    legend:{show:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>v+' PRs'}}
+  });
+}
+
+function renderPrValueBucketChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'valueBucket');
+  const cnts = valueBuckets.map(b=>agg[b]?agg[b].count:0);
+  renderApex('prValueBucketChart', {
+    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
+    series:cnts,
+    labels:valueBuckets,
+    colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},
+    dataLabels:{style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:(v,{w,seriesIndex})=>v+' PRs ('+Math.round(v/data.length*100)+'%)'}},
+    plotOptions:{pie:{donut:{size:'55%',labels:{show:true,total:{show:true,label:'Total',fontSize:'12px',formatter:()=>data.length}}}}}
+  });
+}
+
+function renderPrLocationChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'location');
+  const locs = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
+  const vals = locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
+  renderApex('prLocationChart', {
+    chart:{type:'bar',height:300,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'PRs':'Value (L)',data:vals}],
+    colors:[palette[1]],
+    xaxis:{categories:locs,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
+  });
+}
+
+function renderPrMonthTable(data) {
+  data = data || getFilteredData();
+  const el = document.getElementById('prMonthTable');
+  if(!el) return;
+  const rows = months.map(m => {
+    const open = data.filter(r=>r.month===m&&r.status!=='Cancelled'&&r.status!=='Closed').length;
+    const closed = data.filter(r=>r.month===m&&(r.status==='Cancelled'||r.status==='Closed')).length;
+    const total = data.filter(r=>r.month===m).length;
+    const val = data.filter(r=>r.month===m).reduce((a,r)=>a+r.value,0);
+    return {m,open,closed,total,val:Math.round(val)};
+  });
+  el.innerHTML = `<thead><tr>
+    <th>Month</th><th>Total</th><th>Open</th><th>Closed</th><th>Value (L)</th><th>Status</th>
+  </tr></thead><tbody>${rows.map(r=>`<tr>
+    <td><strong>${r.m}</strong></td>
+    <td><strong>${r.total}</strong></td>
+    <td><span class="badge-open">${r.open}</span></td>
+    <td><span class="badge-closed">${r.closed}</span></td>
+    <td>₹ ${r.val.toLocaleString()}</td>
+    <td style="width:80px"><div style="background:#e2e5ef;border-radius:4px;height:6px"><div style="background:var(--blue);width:${r.total>0?Math.round(r.open/r.total*100):0}%;height:6px;border-radius:4px"></div></div></td>
+  </tr>`).join('')}</tbody>`;
+}
+
+function renderPrMaterialChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'material');
+  const mats = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
+  const vals = mats.map(m=>Math.round(agg[m].value));
+  const total = vals.reduce((a,v)=>a+v,0);
+  renderApex('prMaterialChart', {
+    chart:{type:'pie',height:280,fontFamily:'DM Sans'},
+    series:vals,
+    labels:mats,
+    colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},
+    dataLabels:{formatter:(v,{w,seriesIndex})=>Math.round(v)+'%',style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:(v)=>'₹'+v+' L'}}
+  });
+}
+
+function renderPrBuyerChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'buyer');
+  let sorted = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
+  if(mode==='bottom') sorted = sorted.reverse();
+  const top = sorted.slice(0,10);
+  renderApex('prBuyerChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:'PRs',data:top.map(b=>agg[b].count)}],
+    colors:[mode==='top'?palette[0]:palette[4]],
+    xaxis:{categories:top.map(b=>b.split(' ')[0]),labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>v+' PRs'}}
+  });
+}
+
+// ════════════════════════════════════════════════
+//  PO DASHBOARD CHARTS
+// ════════════════════════════════════════════════
+function renderPoCharts() {
+  const data = getFilteredData();
+  renderPoCategoryChart('count',data);
+  renderPoTatChart(data);
+  renderPoMonthlyChart('count',data);
+  renderPoTatTrendChart(data);
+  renderPoCapexChart(data);
+  renderPoCountryChart(data);
+  renderPoCurrencyChart(data);
+  renderPoLocationChart('count',data);
+  renderPoValueBucketChart(data);
+  renderPoBuyerChart('top',data);
+  renderPoVendorChart('top',data);
+  renderPoMaterialChart(data);
+  renderPoMaterialRankChart(data);
+}
+
+function renderPoCategoryChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'category');
+  const cats = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count).slice(0,10);
+  const vals = cats.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value));
+  renderApex('poCategoryChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
+    colors:[palette[1]],
+    xaxis:{categories:cats,labels:{style:{fontSize:'10px'},rotate:-30}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
+  });
+}
+
+function renderPoTatChart(data) {
+  data = data || getFilteredData();
+  const stages = ['PR→RFQ','RFQ→Offer','Offer→TR','TR→RA','RA→NFA','NFA→PO'];
+  const baseTotal = data.reduce((a,r)=>a+r.tat,0)/(data.length||1);
+  const splits = [0.18,0.14,0.22,0.12,0.16,0.18];
+  const vals = splits.map(s=>Math.round(baseTotal*s*10)/10);
+  renderApex('poTatChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:'Avg Days',data:vals}],
+    colors:[palette[5]],
+    xaxis:{categories:stages,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}},title:{text:'Days',style:{fontSize:'11px'}}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'55%'}},
+    dataLabels:{enabled:true,style:{fontSize:'10px'}},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>v+' days'}}
+  });
+}
+
+function renderPoMonthlyChart(mode, data) {
+  data = data || getFilteredData();
+  const counts = months.map(m=>data.filter(r=>r.month===m).length);
+  const values = months.map(m=>Math.round(data.filter(r=>r.month===m).reduce((a,r)=>a+r.value,0)));
+  const vals = mode==='count'?counts:values;
+  renderApex('poMonthlyChart', {
+    chart:{type:'area',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
+    colors:[palette[0]],
+    stroke:{width:2,curve:'smooth'},
+    fill:{type:'gradient',gradient:{opacityFrom:0.35,opacityTo:0.05}},
+    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    markers:{size:4,strokeWidth:2},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
+  });
+}
+
+function renderPoTatTrendChart(data) {
+  data = data || getFilteredData();
+  const avgs = months.map(m=>{
+    const d=data.filter(r=>r.month===m);
+    if(!d.length) return 0;
+    return Math.round(d.reduce((a,r)=>a+r.tat,0)/d.length*10)/10;
+  });
+  renderApex('poTatTrendChart', {
+    chart:{type:'line',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[
+      {name:'Avg TAT',data:avgs},
+      {name:'Target',data:months.map(()=>17)}
+    ],
+    stroke:{width:[2,2],curve:'smooth',dashArray:[0,5]},
+    colors:[palette[3],palette[4]],
+    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}},title:{text:'Days',style:{fontSize:'11px'}}},
+    annotations:{yaxis:[{y:17,borderColor:palette[4],label:{text:'Target 17d',style:{fontSize:'10px',color:palette[4]}}}]},
+    markers:{size:[4,0]},
+    legend:{position:'top',fontSize:'11px'},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{shared:true,y:{formatter:v=>v+' days'}}
+  });
+}
+
+function renderPoCapexChart(data) {
+  data = data || getFilteredData();
+  const capex = months.map(m=>Math.round(data.filter(r=>r.month===m&&r.capex).reduce((a,r)=>a+r.value,0)));
+  const opex = months.map(m=>Math.round(data.filter(r=>r.month===m&&!r.capex).reduce((a,r)=>a+r.value,0)));
+  renderApex('poCapexChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans',stacked:true},
+    series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],
+    colors:[palette[0],palette[2]],
+    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>'₹'+v}},
+    plotOptions:{bar:{borderRadius:0,columnWidth:'55%'}},
+    dataLabels:{enabled:false},
+    legend:{position:'top',fontSize:'11px'},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
+  });
+}
+
+function renderPoCountryChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'country');
+  const ctrs = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
+  const vals = ctrs.map(c=>Math.round(agg[c].value));
+  renderApex('poCountryChart', {
+    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
+    series:vals,
+    labels:ctrs,
+    colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},
+    dataLabels:{style:{fontSize:'10px'}},
+    plotOptions:{pie:{donut:{size:'50%',labels:{show:true,total:{show:true,label:'Countries',fontSize:'11px',formatter:()=>ctrs.length}}}}}
+  });
+}
+
+function renderPoCurrencyChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'currency');
+  const curs = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
+  const vals = curs.map(c=>Math.round(agg[c].value));
+  renderApex('poCurrencyChart', {
+    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
+    series:vals,
+    labels:curs,
+    colors:palette2,
+    legend:{position:'bottom',fontSize:'10px'},
+    dataLabels:{style:{fontSize:'10px'}},
+    plotOptions:{pie:{donut:{size:'50%',labels:{show:true,total:{show:true,label:'Currencies',fontSize:'11px',formatter:()=>curs.length}}}}}
+  });
+}
+
+function renderPoLocationChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'location');
+  const locs = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
+  const vals = locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
+  renderApex('poLocationChart', {
+    chart:{type:'bar',height:300,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
+    colors:[palette[1]],
+    xaxis:{categories:locs,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
+  });
+}
+
+function renderPoValueBucketChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'valueBucket');
+  const cnts = valueBuckets.map(b=>agg[b]?agg[b].count:0);
+  renderApex('poValueBucketChart', {
+    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
+    series:cnts,
+    labels:valueBuckets,
+    colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},
+    dataLabels:{style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:v=>v+' POs'}},
+    plotOptions:{pie:{donut:{size:'55%',labels:{show:true,total:{show:true,label:'Total POs',fontSize:'11px',formatter:()=>data.length}}}}}
+  });
+}
+
+function renderPoBuyerChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'buyer');
+  let sorted = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
+  if(mode==='bottom') sorted=sorted.reverse();
+  const top = sorted.slice(0,10);
+  renderApex('poBuyerChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:'POs',data:top.map(b=>agg[b].count)}],
+    colors:[mode==='top'?palette[0]:palette[4]],
+    xaxis:{categories:top.map(b=>b.split(' ')[0]),labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>v+' POs'}}
+  });
+}
+
+function renderPoVendorChart(mode, data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'vendor');
+  let sorted = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
+  if(mode==='bottom') sorted=sorted.reverse();
+  const top = sorted.slice(0,10);
+  renderApex('poVendorChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:'Value (L)',data:top.map(v=>Math.round(agg[v].value))}],
+    colors:[mode==='top'?palette[5]:palette[3]],
+    xaxis:{categories:top.map(v=>v.length>15?v.slice(0,14)+'…':v),labels:{style:{fontSize:'9px'},rotate:-25}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>'₹'+v}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>'₹'+v+' L'}}
+  });
+}
+
+function renderPoMaterialChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'material');
+  const mats = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
+  const vals = mats.map(m=>Math.round(agg[m].value));
+  renderApex('poMaterialChart', {
+    chart:{type:'pie',height:280,fontFamily:'DM Sans'},
+    series:vals,
+    labels:mats,
+    colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},
+    dataLabels:{formatter:v=>Math.round(v)+'%',style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:v=>'₹'+v+' L'}}
+  });
+}
+
+function renderPoMaterialRankChart(data) {
+  data = data || getFilteredData();
+  const agg = aggBy(data,'material');
+  const mats = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,10);
+  renderApex('poMaterialRankChart', {
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:'Value (L)',data:mats.map(m=>Math.round(agg[m].value))}],
+    colors:[palette[2]],
+    xaxis:{categories:mats.map(m=>m.length>14?m.slice(0,13)+'…':m),labels:{style:{fontSize:'9px'},rotate:-25}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>'₹'+v}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
+    dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>'₹'+v+' L'}}
+  });
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  buildFilterPanel();
+  renderPrCharts();
+});
+</script>
+</body>
+</html>
