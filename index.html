@@ -784,113 +784,204 @@ body {
   </div><!-- end dash-po -->
 </div><!-- end main -->
 
+
 <script>
+// ════════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════════
+const months = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+
+function fyDate(monthIdx, day) {
+  const calMonth = monthIdx < 9 ? monthIdx + 3 : monthIdx - 9;
+  const calYear  = monthIdx < 9 ? 2024 : 2025;
+  return new Date(calYear, calMonth, day || 1);
+}
+function monthLabel(d) {
+  const m = d.getMonth();
+  const idx = m >= 3 ? m - 3 : m + 9;
+  return months[idx];
+}
+
+const buyers       = ['Rahul Sharma','Priya Nair','Amit Patel','Sneha Kulkarni','Vikram Menon','Deepa Iyer','Suresh Rao','Anjali Singh','Kiran Gupta','Rohit Das','Meera Joshi','Arjun Kumar','Pooja Verma','Naveen Reddy','Divya Bhat'];
+const prCreators   = ['Suresh Kumar','Anita Desai','Ramesh Iyer','Kavita Nair','Prakash Rao','Sunita Patel','Mohan Verma','Lata Sharma','Girish Menon','Rekha Bhat','Ashok Das','Nandini Gupta','Vinod Reddy','Smita Kulkarni','Harish Singh'];
+const categories   = ['Supply','Service','Others'];
+const plants       = ['Plant A','Plant B','Plant C','Plant D','Plant E'];
+const locationWeights = {'Mumbai':220,'Pune':180,'Ahmedabad':145,'Chennai':130,'Hyderabad':110,'Bengaluru':165,'Kolkata':80,'Delhi':95,'Surat':55,'Nagpur':45};
+const locations    = Object.keys(locationWeights);
+const vendors      = ['Larsen & Toubro','Siemens India','ABB Ltd','Honeywell Automation','BHEL','Thermax Ltd','Kirloskar Brothers','Tata Projects','Forbes Marshall','Alfa Laval','Atlas Copco','Ingersoll Rand','Parker Hannifin','Emerson Electric','Bosch Rexroth','Danfoss','Grundfos','Essar Projects','GE India','SKF India'];
+const materials    = ['Electrical Items','Mechanical Spares','Civil Materials','IT Equipment','Chemicals','Instruments','Safety Gear','HVAC Parts','Structural Steel','Piping Material','Consumables','Fasteners','Valves','Pumps','Compressors'];
+const countries    = ['India','Germany','USA','China','Japan','South Korea','UK','Italy','France','Singapore'];
+const currencies   = ['INR','USD','EUR','JPY','GBP','SGD','CNY'];
+const doaClauses   = ['4.3','4.5','4.10','4.12','4.15','4.20'];
+const incoterms    = ['CIF','FOB','EXW','DAP','DDP','CFR','FCA'];
+const valueBuckets = ['0–3L','3–10L','10–25L','25–50L','50L–1Cr','>1Cr'];
+const ageingBuckets= ['0–30 Days','31–60 Days','61–90 Days','91–180 Days','181–365 Days','>365 Days'];
+const prStatuses   = ['Open','Closed'];
+const intStatuses  = ['RFQ Stage','Offer Received','TR Raised','RA Completed','NFA Issued','PO Created'];
+const fyYears      = ['FY2023-24','FY2024-25'];
+
+const palette  = ['#2563eb','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#1e3a6e','#0d9488','#b45309','#9333ea','#0f766e','#1d4ed8','#065f46','#92400e','#7f1d1d'];
+const palette2 = ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#1e40af','#14b8a6','#d97706','#a855f7'];
+
+// ── Seeded PRNG ──────────────────────────────────
+let _seed = 20240401;
+function rng() { _seed = (_seed * 1664525 + 1013904223) & 0xffffffff; return ((_seed >>> 0) / 4294967296); }
+function rngInt(min, max) { return Math.floor(rng() * (max - min + 1)) + min; }
+function rngPick(arr) { return arr[rngInt(0, arr.length - 1)]; }
+function rngWeightedPick(obj) {
+  const keys = Object.keys(obj), total = keys.reduce((s,k)=>s+obj[k],0);
+  let r = rng() * total;
+  for(const k of keys){ r -= obj[k]; if(r <= 0) return k; }
+  return keys[keys.length-1];
+}
+function valueBucketFor(v) {
+  if(v<=3) return '0–3L'; if(v<=10) return '3–10L'; if(v<=25) return '10–25L';
+  if(v<=50) return '25–50L'; if(v<=100) return '50L–1Cr'; return '>1Cr';
+}
+function ageingBucketFor(days) {
+  if(days<=30) return '0–30 Days'; if(days<=60) return '31–60 Days';
+  if(days<=90) return '61–90 Days'; if(days<=180) return '91–180 Days';
+  if(days<=365) return '181–365 Days'; return '>365 Days';
+}
+
 // ════════════════════════════════════════════════
 //  DATA GENERATION
 // ════════════════════════════════════════════════
-const months = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
-const buyers = ['Rahul Sharma','Priya Nair','Amit Patel','Sneha Kulkarni','Vikram Menon','Deepa Iyer','Suresh Rao','Anjali Singh','Kiran Gupta','Rohit Das','Meera Joshi','Arjun Kumar','Pooja Verma','Naveen Reddy','Divya Bhat'];
-const categories = ['Civil Works','Electrical','Mechanical','IT Hardware','IT Software','Furniture','Raw Material','Chemicals','Safety Equipment','MRO','Spare Parts','Instrumentation','HVAC','Piping','Structural Steel'];
-const plants = ['Plant A','Plant B','Plant C','Plant D','Plant E'];
-const locations = ['Mumbai','Pune','Ahmedabad','Chennai','Hyderabad','Bengaluru','Kolkata','Delhi','Surat','Nagpur'];
-const vendors = ['Larsen & Toubro','Siemens India','ABB Ltd','Honeywell Automation','BHEL','Thermax Ltd','Kirloskar Brothers','Tata Projects','Essar Projects','Forbes Marshall','Alfa Laval','Atlas Copco','Ingersoll Rand','Parker Hannifin','Emerson Electric','Bosch Rexroth','Danfoss','Grundfos','Spirent Comms','GE India'];
-const materials = ['Electrical Items','Mechanical Spares','Civil Materials','IT Equipment','Chemicals','Instruments','Safety Gear','HVAC Parts','Structural Steel','Piping Material','Consumables','Fasteners','Valves','Pumps','Compressors'];
-const countries = ['India','Germany','USA','China','Japan','South Korea','UK','Italy','France','Singapore'];
-const currencies = ['INR','USD','EUR','JPY','GBP','SGD','CNY'];
-const doa = ['Level 1 (< 10L)','Level 2 (10-50L)','Level 3 (50-200L)','Level 4 (200L-1Cr)','Level 5 (>1Cr)'];
-const incoterms = ['CIF','FOB','EXW','DAP','DDP','CFR','FCA'];
-const valueBuckets = ['0–3L','3–10L','10–25L','25–50L','50L–1Cr','>1Cr'];
-const ageingBuckets = ['0–30 Days','31–60 Days','61–90 Days','91–180 Days','181–365 Days','>365 Days'];
-const prStatuses = ['Open','In Progress','Pending Approval','On Hold','Cancelled'];
-const intStatuses = ['RFQ Stage','Offer Received','TR Raised','RA Completed','NFA Issued','PO Created'];
-
-// PR dummy data
+const prMonthlyVolumes = [85,78,92,110,105,98,115,88,102,120,95,96];
 const prData = [];
-for(let i=0;i<1284;i++){
-  const m = months[Math.floor(Math.random()*12)];
-  prData.push({
-    id:'PR'+String(10000+i),
-    buyer: buyers[Math.floor(Math.random()*buyers.length)],
-    category: categories[Math.floor(Math.random()*categories.length)],
-    plant: plants[Math.floor(Math.random()*plants.length)],
-    location: locations[Math.floor(Math.random()*locations.length)],
-    material: materials[Math.floor(Math.random()*materials.length)],
-    month: m,
-    status: prStatuses[Math.floor(Math.random()*prStatuses.length)],
-    intStatus: intStatuses[Math.floor(Math.random()*intStatuses.length)],
-    ageing: ageingBuckets[Math.floor(Math.random()*ageingBuckets.length)],
-    valueBucket: valueBuckets[Math.floor(Math.random()*valueBuckets.length)],
-    value: Math.round((Math.random()*200+1)*100)/100,
-    capex: Math.random()>0.4,
-  });
+let prSeq = 10001;
+for(let mi = 0; mi < 12; mi++) {
+  const vol = prMonthlyVolumes[mi] + (mi < 4 ? rngInt(0,15) : rngInt(0,10));
+  for(let j = 0; j < vol; j++) {
+    const created = fyDate(mi, rngInt(1,28));
+    const hasRfq   = rng() < 0.88;
+    const hasOffer = hasRfq   && rng() < 0.87;
+    const hasTr    = hasOffer && rng() < 0.84;
+    const hasRa    = hasTr    && rng() < 0.88;
+    const hasNfa   = hasRa    && rng() < 0.86;
+    const hasPo    = hasNfa   && rng() < 0.82;
+    const rfqDate   = hasRfq   ? new Date(created.getTime()   + rngInt(2,12)*86400000) : null;
+    const offerDate = hasOffer  ? new Date(rfqDate.getTime()   + rngInt(3,15)*86400000) : null;
+    const trDate    = hasTr     ? new Date(offerDate.getTime() + rngInt(2,10)*86400000) : null;
+    const raDate    = hasRa     ? new Date(trDate.getTime()    + rngInt(3,14)*86400000) : null;
+    const nfaDate   = hasNfa    ? new Date(raDate.getTime()    + rngInt(2,8)*86400000)  : null;
+    const poDate    = hasPo     ? new Date(nfaDate.getTime()   + rngInt(1,6)*86400000)  : null;
+    const today     = new Date(2025,3,17);
+    const ageingDays= Math.round((today - created)/86400000);
+    let intStatus = 'PR Created';
+    if(hasRfq)   intStatus = 'RFQ Stage';
+    if(hasOffer) intStatus = 'Offer Received';
+    if(hasTr)    intStatus = 'TR Raised';
+    if(hasRa)    intStatus = 'RA Completed';
+    if(hasNfa)   intStatus = 'NFA Issued';
+    if(hasPo)    intStatus = 'PO Created';
+    const value = Math.round((rng()*195 + 2)*10)/10;
+    const cat   = rng()<0.50?'Supply':rng()<0.70?'Service':'Others';
+    prData.push({
+      pr_id:'PR'+prSeq++, pr_creator:rngPick(prCreators), buyer:rngPick(buyers),
+      category:cat, plant:rngPick(plants), location:rngWeightedPick(locationWeights),
+      material:rngPick(materials), created_date:created, month:monthLabel(created),
+      status:hasPo?'Closed':'Open', intStatus, ageing:ageingBucketFor(ageingDays), ageingDays,
+      valueBucket:valueBucketFor(value), value, capex:rng()<0.42,
+      stage_dates:{rfq:rfqDate,offer:offerDate,tr:trDate,ra:raDate,nfa:nfaDate,po:poDate},
+      hasRfq, hasOffer, hasTr, hasRa, hasNfa, hasPo,
+    });
+  }
 }
 
-// PO dummy data
+const poMonthlyVolumes = [62,58,74,88,80,76,90,70,82,95,72,80];
 const poData = [];
-for(let i=0;i<947;i++){
-  const m = months[Math.floor(Math.random()*12)];
-  poData.push({
-    id:'PO'+String(20000+i),
-    buyer: buyers[Math.floor(Math.random()*buyers.length)],
-    category: categories[Math.floor(Math.random()*categories.length)],
-    plant: plants[Math.floor(Math.random()*plants.length)],
-    location: locations[Math.floor(Math.random()*locations.length)],
-    material: materials[Math.floor(Math.random()*materials.length)],
-    vendor: vendors[Math.floor(Math.random()*vendors.length)],
-    country: countries[Math.floor(Math.random()*countries.length)],
-    currency: currencies[Math.floor(Math.random()*currencies.length)],
-    doa: doa[Math.floor(Math.random()*doa.length)],
-    incoterm: incoterms[Math.floor(Math.random()*incoterms.length)],
-    month: m,
-    valueBucket: valueBuckets[Math.floor(Math.random()*valueBuckets.length)],
-    value: Math.round((Math.random()*250+5)*100)/100,
-    capex: Math.random()>0.45,
-    tat: Math.round(Math.random()*30+5),
-    items: Math.round(Math.random()*8+1),
-  });
+let poSeq = 20001;
+for(let mi = 0; mi < 12; mi++) {
+  const vol = poMonthlyVolumes[mi] + rngInt(0,8);
+  for(let j = 0; j < vol; j++) {
+    const prCreated = fyDate(mi, rngInt(1,25));
+    const rfqDate   = new Date(prCreated.getTime() + rngInt(2,10)*86400000);
+    const offerDate = new Date(rfqDate.getTime()   + rngInt(3,14)*86400000);
+    const trDate    = new Date(offerDate.getTime() + rngInt(2,9)*86400000);
+    const raDate    = new Date(trDate.getTime()    + rngInt(3,12)*86400000);
+    const nfaDate   = new Date(raDate.getTime()    + rngInt(2,7)*86400000);
+    const poDate    = new Date(nfaDate.getTime()   + rngInt(1,5)*86400000);
+    const tat = Math.round((poDate - prCreated)/86400000);
+    const stageTat = {
+      'PR→RFQ':   Math.round((rfqDate-prCreated)/86400000),
+      'RFQ→Offer':Math.round((offerDate-rfqDate)/86400000),
+      'Offer→TR': Math.round((trDate-offerDate)/86400000),
+      'TR→RA':    Math.round((raDate-trDate)/86400000),
+      'RA→NFA':   Math.round((nfaDate-raDate)/86400000),
+      'NFA→PO':   Math.round((poDate-nfaDate)/86400000),
+    };
+    const isImport = rng() < 0.24;
+    const country  = isImport ? rngPick(countries.filter(c=>c!=='India')) : 'India';
+    const currency = country==='India'?'INR':country==='Germany'||country==='France'||country==='Italy'?'EUR':country==='USA'?'USD':country==='Japan'?'JPY':country==='UK'?'GBP':country==='Singapore'?'SGD':country==='China'?'CNY':'USD';
+    const value = Math.round((rng()*240+4)*10)/10;
+    const cat   = rng()<0.52?'Supply':rng()<0.72?'Service':'Others';
+    poData.push({
+      po_id:'PO'+poSeq++, pr_id:'PR'+rngInt(10001,10001+prData.length-1),
+      buyer:rngPick(buyers), category:cat, plant:rngPick(plants),
+      location:rngWeightedPick(locationWeights), material:rngPick(materials),
+      vendor:rngPick(vendors), country, currency, doa:rngPick(doaClauses),
+      incoterm:rngPick(incoterms), created_date:prCreated, po_date:poDate,
+      month:monthLabel(poDate), valueBucket:valueBucketFor(value),
+      value, capex:rng()<0.44, tat, stageTat, items:rngInt(1,9), isImport,
+      fyYear:'FY2024-25',
+    });
+  }
 }
 
 // ════════════════════════════════════════════════
-//  FILTER STATE
+//  GLOBAL STATE
+// ════════════════════════════════════════════════
+let currentDash  = 'pr';
+let globalMetric = 'count';
+let filterSelections = {};
+let chartInstances   = {};
+let prBuyerMode='top', prBuyerMetric='count';
+let poBuyerMode='top', poBuyerMetric='count';
+let poVendorMode='top', poVendorMetric='count';
+let prAgeingStage='all';
+let poCapexMetric='count', poCountryMetric='count';
+let poLocationMetric='count', prLocationMetric='count';
+let prCapexMetric='count', prCategoryMetric='count';
+let poCategoryMetric='count', poMonthlyMetric='count';
+
+// ════════════════════════════════════════════════
+//  FILTER DEFINITIONS
 // ════════════════════════════════════════════════
 const filterDefs = {
   pr: [
-    {key:'buyer', label:'PR Created / Buyer', opts: buyers},
-    {key:'category', label:'PR Category', opts: categories},
-    {key:'plant', label:'Plant Code', opts: plants},
-    {key:'location', label:'Location', opts: locations},
-    {key:'month', label:'PR Release Month', opts: months},
-    {key:'status', label:'PR Status', opts: prStatuses},
-    {key:'intStatus', label:'Intermediate Status', opts: intStatuses},
-    {key:'ageing', label:'Ageing Bucket', opts: ageingBuckets},
-    {key:'material', label:'Material Group', opts: materials},
-    {key:'valueBucket', label:'Value Bucket', opts: valueBuckets},
+    {key:'pr_creator', label:'PR Created By',       opts:prCreators},
+    {key:'buyer',      label:'Assigned Buyer',       opts:buyers},
+    {key:'month',      label:'PR Release Month',     opts:months},
+    {key:'category',   label:'PR Category',          opts:categories},
+    {key:'status',     label:'PR Status',            opts:prStatuses},
+    {key:'intStatus',  label:'Intermediate Status',  opts:intStatuses},
+    {key:'plant',      label:'Plant Code',           opts:plants},
+    {key:'location',   label:'Location',             opts:locations},
+    {key:'ageing',     label:'Ageing Bucket',        opts:ageingBuckets},
+    {key:'material',   label:'Material Group',       opts:materials},
+    {key:'valueBucket',label:'Value Bucket',         opts:valueBuckets},
   ],
   po: [
-    {key:'buyer', label:'Buyer', opts: buyers},
-    {key:'category', label:'PO Category', opts: categories},
-    {key:'plant', label:'Plant', opts: plants},
-    {key:'location', label:'Location', opts: locations},
-    {key:'month', label:'PO Date (Month)', opts: months},
-    {key:'material', label:'Material Group', opts: materials},
-    {key:'valueBucket', label:'Value Bucket', opts: valueBuckets},
-    {key:'doa', label:'DOA Clause', opts: doa},
-    {key:'incoterm', label:'Incoterms', opts: incoterms},
-    {key:'country', label:'Country', opts: countries},
-    {key:'vendor', label:'Vendor', opts: vendors},
+    {key:'buyer',      label:'Buyer',                opts:buyers},
+    {key:'month',      label:'PO Month',             opts:months},
+    {key:'fyYear',     label:'PO Year',              opts:fyYears},
+    {key:'category',   label:'Category',             opts:categories},
+    {key:'plant',      label:'Plant',                opts:plants},
+    {key:'location',   label:'Location',             opts:locations},
+    {key:'material',   label:'Material Group',       opts:materials},
+    {key:'valueBucket',label:'Value Bucket',         opts:valueBuckets},
+    {key:'doa',        label:'DOA Clause',           opts:doaClauses},
+    {key:'incoterm',   label:'Incoterms',            opts:incoterms},
+    {key:'country',    label:'Country',              opts:countries},
+    {key:'vendor',     label:'Vendor',               opts:vendors},
   ]
 };
 
-let currentDash = 'pr';
-let filterSelections = {}; // {key: Set of selected values}
-let chartInstances = {};
-let chartModes = {}; // track count/value toggle per chart
-
 function getActiveDefs() { return filterDefs[currentDash]; }
-function getActiveData() { return currentDash==='pr' ? prData : poData; }
-
+function getActiveRawData() { return currentDash==='pr' ? prData : poData; }
 function getFilteredData() {
-  return getActiveData().filter(row => {
+  return getActiveRawData().filter(row => {
     for(const def of getActiveDefs()) {
       const sel = filterSelections[def.key];
       if(sel && sel.size>0 && !sel.has(row[def.key])) return false;
@@ -908,136 +999,98 @@ function buildFilterPanel() {
   filterSelections = {};
   getActiveDefs().forEach(def => {
     filterSelections[def.key] = new Set();
+    const sk = def.key.replace(/[^a-zA-Z0-9]/g,'_');
     const grp = document.createElement('div');
     grp.className = 'filter-group';
     grp.innerHTML = `
       <div class="filter-group-header" onclick="toggleGroup(this,'${def.key}')">
         <span class="filter-group-label">${def.label}</span>
         <div class="filter-group-meta">
-          <span class="filter-count-badge" id="badge-${def.key}">0</span>
+          <span class="filter-count-badge" id="badge-${sk}">0</span>
           <svg class="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
         </div>
       </div>
       <div class="filter-dropdown" id="drop-${def.key}">
-        <div class="filter-search"><input type="text" placeholder="Search..." oninput="searchFilter(this,'${def.key}')"></div>
-        <div id="opts-${def.key}">
-          ${def.opts.map(o=>`<div class="filter-option"><input type="checkbox" id="cb-${def.key}-${o.replace(/\s/g,'_')}" value="${o}" onchange="toggleFilter('${def.key}','${o}',this.checked)"><label for="cb-${def.key}-${o.replace(/\s/g,'_')}">${o}</label></div>`).join('')}
-        </div>
-      </div>
-    `;
+        <div class="filter-search"><input type="text" placeholder="Search…" oninput="searchFilter(this,'${def.key}')"></div>
+        <div id="opts-${def.key}">${def.opts.map(o=>`<div class="filter-option"><input type="checkbox" id="cb-${sk}-${o.replace(/[^a-zA-Z0-9]/g,'_')}" value="${o}" onchange="toggleFilter('${def.key}','${o.replace(/'/g,"\\'")}',this.checked)"><label for="cb-${sk}-${o.replace(/[^a-zA-Z0-9]/g,'_')}">${o}</label></div>`).join('')}</div>
+      </div>`;
     body.appendChild(grp);
   });
 }
 
 function toggleGroup(hdr, key) {
   const isOpen = hdr.classList.contains('open');
-  // close all
   document.querySelectorAll('.filter-group-header.open').forEach(h=>h.classList.remove('open'));
   document.querySelectorAll('.filter-dropdown.open').forEach(d=>d.classList.remove('open'));
-  if(!isOpen) {
-    hdr.classList.add('open');
-    document.getElementById('drop-'+key).classList.add('open');
-  }
+  if(!isOpen){ hdr.classList.add('open'); document.getElementById('drop-'+key).classList.add('open'); }
 }
-
 function searchFilter(input, key) {
   const q = input.value.toLowerCase();
-  document.querySelectorAll(`#opts-${key} .filter-option`).forEach(opt => {
-    const lbl = opt.querySelector('label').textContent.toLowerCase();
-    opt.style.display = lbl.includes(q) ? '' : 'none';
+  document.querySelectorAll(`#opts-${key} .filter-option`).forEach(opt=>{
+    opt.style.display = opt.querySelector('label').textContent.toLowerCase().includes(q)?'':'none';
   });
 }
-
 function toggleFilter(key, val, checked) {
-  if(checked) filterSelections[key].add(val);
-  else filterSelections[key].delete(val);
-  updateBadge(key);
-  updateGlobalBadge();
-  renderChips();
+  if(checked) filterSelections[key].add(val); else filterSelections[key].delete(val);
+  const sk=key.replace(/[^a-zA-Z0-9]/g,'_');
+  const badge=document.getElementById('badge-'+sk);
+  if(badge){const n=filterSelections[key].size;badge.textContent=n;badge.classList.toggle('show',n>0);}
+  updateGlobalBadge(); renderChips();
 }
-
-function updateBadge(key) {
-  const badge = document.getElementById('badge-'+key);
-  const cnt = filterSelections[key].size;
-  badge.textContent = cnt;
-  badge.classList.toggle('show', cnt>0);
-}
-
 function updateGlobalBadge() {
-  let total = 0;
-  Object.values(filterSelections).forEach(s=>total+=s.size);
-  const fb = document.getElementById('filterBadge');
-  fb.textContent = total;
-  fb.classList.toggle('show', total>0);
+  let total=0; Object.values(filterSelections).forEach(s=>total+=s.size);
+  const fb=document.getElementById('filterBadge'); fb.textContent=total; fb.classList.toggle('show',total>0);
 }
-
 function renderChips() {
-  const area = document.getElementById('chipsArea');
-  area.innerHTML = '';
-  getActiveDefs().forEach(def => {
-    filterSelections[def.key] && filterSelections[def.key].forEach(val => {
-      const chip = document.createElement('div');
-      chip.className = 'chip';
-      chip.innerHTML = `<span>${val}</span><button class="chip-remove" onclick="removeChip('${def.key}','${val}')">×</button>`;
+  const area=document.getElementById('chipsArea'); area.innerHTML='';
+  getActiveDefs().forEach(def=>{
+    if(!filterSelections[def.key]) return;
+    filterSelections[def.key].forEach(val=>{
+      const chip=document.createElement('div'); chip.className='chip';
+      chip.innerHTML=`<span>${val}</span><button class="chip-remove" onclick="removeChip('${def.key}','${val.replace(/'/g,"\\'")}')">×</button>`;
       area.appendChild(chip);
     });
   });
 }
-
 function removeChip(key, val) {
   filterSelections[key].delete(val);
-  const cb = document.getElementById(`cb-${key}-${val.replace(/\s/g,'_')}`);
-  if(cb) cb.checked = false;
-  updateBadge(key);
-  updateGlobalBadge();
-  renderChips();
+  const sk=key.replace(/[^a-zA-Z0-9]/g,'_'), sv=val.replace(/[^a-zA-Z0-9]/g,'_');
+  const cb=document.getElementById(`cb-${sk}-${sv}`); if(cb) cb.checked=false;
+  const badge=document.getElementById('badge-'+sk);
+  if(badge){const n=filterSelections[key].size;badge.textContent=n;badge.classList.toggle('show',n>0);}
+  updateGlobalBadge(); renderChips();
 }
-
 function clearFilters() {
-  getActiveDefs().forEach(def => {
-    filterSelections[def.key] = new Set();
+  getActiveDefs().forEach(def=>{
+    filterSelections[def.key]=new Set();
+    const sk=def.key.replace(/[^a-zA-Z0-9]/g,'_');
     document.querySelectorAll(`#opts-${def.key} input[type=checkbox]`).forEach(cb=>cb.checked=false);
-    updateBadge(def.key);
+    const badge=document.getElementById('badge-'+sk); if(badge){badge.textContent='0';badge.classList.remove('show');}
   });
-  updateGlobalBadge();
-  renderChips();
+  updateGlobalBadge(); renderChips();
 }
-
-function applyFilters() {
-  closeFilter();
-  renderAllCharts();
-}
-
-function openFilter() {
-  document.getElementById('filterPanel').classList.add('open');
-  document.getElementById('filterOverlay').classList.add('open');
-}
-
-function closeFilter() {
-  document.getElementById('filterPanel').classList.remove('open');
-  document.getElementById('filterOverlay').classList.remove('open');
-}
+function applyFilters(){ closeFilter(); renderAllCharts(); }
+function openFilter(){ document.getElementById('filterPanel').classList.add('open'); document.getElementById('filterOverlay').classList.add('open'); }
+function closeFilter(){ document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
 
 // ════════════════════════════════════════════════
 //  DASHBOARD SWITCH
 // ════════════════════════════════════════════════
 function switchDash(dash) {
-  currentDash = dash;
+  currentDash=dash; globalMetric='count';
   document.querySelectorAll('.dashboard').forEach(d=>d.classList.remove('active'));
   document.getElementById('dash-'+dash).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active',(dash==='pr'&&i===0)||(dash==='po'&&i===1));
-  });
-  buildFilterPanel();
-  renderAllCharts();
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',(dash==='pr'&&i===0)||(dash==='po'&&i===1));});
+  document.querySelectorAll('.toggle-group .toggle-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+  buildFilterPanel(); renderAllCharts();
 }
 
 // ════════════════════════════════════════════════
-//  TOGGLE METRIC
+//  GLOBAL METRIC TOGGLE
 // ════════════════════════════════════════════════
 function toggleMetric(dash, mode, btn) {
   btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  btn.classList.add('active'); globalMetric=mode; renderAllCharts();
 }
 
 // ════════════════════════════════════════════════
@@ -1046,541 +1099,635 @@ function toggleMetric(dash, mode, btn) {
 function switchChart(chartId, mode, btn) {
   btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  chartModes[chartId] = mode;
-  if(chartId==='prCategory') renderPrCategoryChart(mode);
-  if(chartId==='prCapex') renderPrCapexChart(mode);
-  if(chartId==='prLocation') renderPrLocationChart(mode);
-  if(chartId==='poCategory') renderPoCategoryChart(mode);
-  if(chartId==='poMonthly') renderPoMonthlyChart(mode);
-  if(chartId==='poLocation') renderPoLocationChart(mode);
+  const data=getFilteredData();
+  if(chartId==='prCategory'){prCategoryMetric=mode;renderPrCategoryChart(data);}
+  if(chartId==='prCapex')   {prCapexMetric=mode;   renderPrCapexChart(data);}
+  if(chartId==='prLocation'){prLocationMetric=mode;renderPrLocationChart(data);}
+  if(chartId==='prAgeing')  {renderPrAgeingChart(data);}
+  if(chartId==='poCategory'){poCategoryMetric=mode;renderPoCategoryChart(data);}
+  if(chartId==='poMonthly') {poMonthlyMetric=mode; renderPoMonthlyChart(data);}
+  if(chartId==='poLocation'){poLocationMetric=mode;renderPoLocationChart(data);}
+  if(chartId==='poCapex')   {poCapexMetric=mode;   renderPoCapexChart(data);}
+  if(chartId==='poCountry') {poCountryMetric=mode; renderPoCountryChart(data);}
 }
-
 function switchBuyerView(dash, mode, btn) {
   btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  if(dash==='pr') renderPrBuyerChart(mode);
-  else renderPoBuyerChart(mode);
+  if(dash==='pr'){prBuyerMode=mode;renderPrBuyerChart(getFilteredData());}
+  else{poBuyerMode=mode;renderPoBuyerChart(getFilteredData());}
 }
-
-function switchVendorView(mode, btn) {
+function switchBuyerMetric(dash, mode, btn) {
   btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderPoVendorChart(mode);
+  if(dash==='pr'){prBuyerMetric=mode;renderPrBuyerChart(getFilteredData());}
+  else{poBuyerMetric=mode;renderPoBuyerChart(getFilteredData());}
 }
-
-function destroyChart(id) {
-  if(chartInstances[id]) { try{chartInstances[id].destroy();}catch(e){} chartInstances[id]=null; }
+function switchVendorView(mode, btn) {
+  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); poVendorMode=mode; renderPoVendorChart(getFilteredData());
 }
-
-function renderApex(id, opts) {
-  destroyChart(id);
-  const el = document.getElementById(id);
-  if(!el) return;
-  chartInstances[id] = new ApexCharts(el, opts);
-  chartInstances[id].render();
+function switchVendorMetric(mode, btn) {
+  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); poVendorMetric=mode; renderPoVendorChart(getFilteredData());
 }
-
-const palette = ['#2563eb','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#1e3a6e','#0d9488','#b45309','#9333ea','#0f766e','#1d4ed8','#065f46','#92400e','#7f1d1d'];
-const palette2 = ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#1e40af','#14b8a6','#d97706','#a855f7'];
+function setAgeingStage(stage, el) {
+  prAgeingStage=stage;
+  el.closest('.chart-header').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); renderPrAgeingChart(getFilteredData());
+}
+function destroyChart(id){ if(chartInstances[id]){try{chartInstances[id].destroy();}catch(e){}chartInstances[id]=null;} }
+function renderApex(id, opts){
+  destroyChart(id); const el=document.getElementById(id); if(!el) return;
+  chartInstances[id]=new ApexCharts(el,opts); chartInstances[id].render();
+}
 
 // ════════════════════════════════════════════════
-//  PR DASHBOARD CHARTS
+//  AGGREGATE HELPERS
+// ════════════════════════════════════════════════
+function aggBy(data, key) {
+  const map={};
+  data.forEach(r=>{ const k=r[key]||'Unknown'; if(!map[k]) map[k]={count:0,value:0}; map[k].count++; map[k].value+=r.value||0; });
+  return map;
+}
+
+// ════════════════════════════════════════════════
+//  RENDER ALL
 // ════════════════════════════════════════════════
 function renderAllCharts() {
-  if(currentDash==='pr') renderPrCharts();
-  else renderPoCharts();
+  if(currentDash==='pr') renderPrCharts(); else renderPoCharts();
 }
 
+// ════════════════════════════════════════════════
+//  PR DASHBOARD
+// ════════════════════════════════════════════════
 function renderPrCharts() {
-  const data = getFilteredData();
-  renderPrPipeline(data);
-  renderPrCategoryChart('count',data);
-  renderPrInflowChart(data);
-  renderPrCapexChart('count',data);
-  renderPrAgeingChart(data);
-  renderPrValueBucketChart(data);
-  renderPrLocationChart('count',data);
-  renderPrMonthTable(data);
-  renderPrMaterialChart(data);
-  renderPrBuyerChart('top',data);
+  const data=getFilteredData();
+  updatePrKpis(data); renderPrPipeline(data); renderPrCategoryChart(data);
+  renderPrInflowChart(data); renderPrCapexChart(data); renderPrAgeingChart(data);
+  renderPrValueBucketChart(data); renderPrLocationChart(data);
+  renderPrMonthTable(data); renderPrMaterialChart(data); renderPrBuyerChart(data);
+}
+
+function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+
+function updatePrKpis(data) {
+  const total  = data.length;
+  const totVal = data.reduce((a,r)=>a+r.value,0);
+  const openPRs  = data.filter(r=>r.status==='Open');
+  const closedPRs= data.filter(r=>r.status==='Closed');
+  const openVal  = openPRs.reduce((a,r)=>a+r.value,0);
+  const pr365    = data.filter(r=>r.ageingDays>=365).length;
+  const lvPRs    = data.filter(r=>r.valueBucket==='0–3L');
+  const lvVal    = lvPRs.reduce((a,r)=>a+r.value,0);
+  const openPct  = total>0?(openPRs.length/total*100).toFixed(1):'0.0';
+  const clsPct   = total>0?(closedPRs.length/total*100).toFixed(1):'0.0';
+
+  if(globalMetric==='count') {
+    setText('kpi-total-pr', total.toLocaleString());
+    setText('kpi-pr-value', '₹ '+Math.round(totVal/100)/10+' Cr');
+    setText('kpi-open-pct', openPct+'%');
+    setText('kpi-closed-pct', clsPct+'%');
+    setText('kpi-open-val', '₹ '+Math.round(openVal/100)/10+' Cr');
+    setText('kpi-365', pr365.toLocaleString());
+    setText('kpi-lv-count', lvPRs.length.toLocaleString());
+    setText('kpi-lv-val', '₹ '+Math.round(lvVal)+' L');
+  } else {
+    setText('kpi-total-pr', '₹ '+Math.round(totVal)+' L');
+    setText('kpi-pr-value', '₹ '+Math.round(totVal/100)/10+' Cr');
+    setText('kpi-open-pct', '₹ '+Math.round(openVal)+' L');
+    setText('kpi-closed-pct', '₹ '+Math.round(totVal-openVal)+' L');
+    setText('kpi-open-val', '₹ '+Math.round(openVal/100)/10+' Cr');
+    setText('kpi-365', pr365.toLocaleString());
+    setText('kpi-lv-count', lvPRs.length.toLocaleString());
+    setText('kpi-lv-val', '₹ '+Math.round(lvVal)+' L');
+  }
 }
 
 function renderPrPipeline(data) {
-  data = data || getFilteredData();
-  const stages = [
-    {label:'PR', count: data.length},
-    {label:'RFQ', count: Math.round(data.length*0.82)},
-    {label:'Offer', count: Math.round(data.length*0.71)},
-    {label:'TR', count: Math.round(data.length*0.62)},
-    {label:'RA', count: Math.round(data.length*0.54)},
-    {label:'NFA', count: Math.round(data.length*0.48)},
-    {label:'PO', count: Math.round(data.length*0.37)},
+  const stages=[
+    {label:'PR',    count:data.length},
+    {label:'RFQ',   count:data.filter(r=>r.hasRfq).length},
+    {label:'Offer', count:data.filter(r=>r.hasOffer).length},
+    {label:'TR',    count:data.filter(r=>r.hasTr).length},
+    {label:'RA',    count:data.filter(r=>r.hasRa).length},
+    {label:'NFA',   count:data.filter(r=>r.hasNfa).length},
+    {label:'PO',    count:data.filter(r=>r.hasPo).length},
   ];
-  const el = document.getElementById('prPipeline');
-  if(!el) return;
-  el.innerHTML = '';
-  stages.forEach((s,i) => {
-    if(i>0) {
-      const arr = document.createElement('div');
-      arr.className = 'pipeline-arrow';
-      el.appendChild(arr);
-    }
-    const stage = document.createElement('div');
-    stage.className = 'pipeline-stage'+(i===0?' active':'');
-    stage.innerHTML = `<div class="ps-label">${s.label}</div><div class="ps-count">${s.count.toLocaleString()}</div><div class="ps-pct">${stages[0].count>0?Math.round(s.count/stages[0].count*100):0}%</div>`;
-    stage.onclick = function() {
-      document.querySelectorAll('#prPipeline .pipeline-stage').forEach(x=>x.classList.remove('active'));
-      this.classList.add('active');
-    };
+  const el=document.getElementById('prPipeline'); if(!el) return; el.innerHTML='';
+  stages.forEach((s,i)=>{
+    if(i>0){const a=document.createElement('div');a.className='pipeline-arrow';el.appendChild(a);}
+    const stage=document.createElement('div');
+    stage.className='pipeline-stage'+(i===0?' active':'');
+    const pct=data.length>0?Math.round(s.count/data.length*100):0;
+    stage.innerHTML=`<div class="ps-label">${s.label}</div><div class="ps-count">${s.count.toLocaleString()}</div><div class="ps-pct">${pct}%</div>`;
+    stage.onclick=function(){document.querySelectorAll('#prPipeline .pipeline-stage').forEach(x=>x.classList.remove('active'));this.classList.add('active');};
     el.appendChild(stage);
   });
 }
 
-function aggBy(data, key, valKey) {
-  const map = {};
-  data.forEach(r => {
-    const k = r[key]||'Unknown';
-    if(!map[k]) map[k]={count:0,value:0};
-    map[k].count++;
-    map[k].value+=r[valKey||'value']||0;
-  });
-  return map;
-}
-
-function renderPrCategoryChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'category');
-  const cats = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count).slice(0,10);
-  const vals = cats.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value*100)/100);
-  renderApex('prCategoryChart', {
+function renderPrCategoryChart(data) {
+  const mode=globalMetric==='value'?'value':prCategoryMetric;
+  const agg=aggBy(data,'category');
+  const cats=['Supply','Service','Others'];
+  const vals=cats.map(c=>mode==='count'?(agg[c]?.count||0):Math.round(agg[c]?.value||0));
+  renderApex('prCategoryChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
     series:[{name:mode==='count'?'Count':'Value (L)',data:vals}],
-    xaxis:{categories:cats,labels:{style:{fontSize:'10px'},rotate:-30}},
-    colors:[palette[0]],
-    dataLabels:{enabled:false},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v+'L':v}},
+    xaxis:{categories:cats,labels:{style:{fontSize:'11px'}}},
+    colors:[palette[0]],dataLabels:{enabled:true,style:{fontSize:'11px'}},
+    plotOptions:{bar:{borderRadius:5,columnWidth:'45%'}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
     tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
   });
 }
 
 function renderPrInflowChart(data) {
-  data = data || getFilteredData();
-  const inflow = months.map(m=>data.filter(r=>r.month===m).length);
-  const outflow = months.map((m,i)=>Math.round(inflow[i]*0.37*((Math.random()*0.3)+0.85)));
-  renderApex('prInflowChart', {
+  const inflow =months.map(m=>data.filter(r=>r.month===m).length);
+  const outflow=months.map(m=>data.filter(r=>r.hasPo&&r.stage_dates.po&&monthLabel(r.stage_dates.po)===m).length);
+  renderApex('prInflowChart',{
     chart:{type:'line',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[
-      {name:'PR Inflow',type:'area',data:inflow},
-      {name:'PO Outflow',type:'line',data:outflow}
-    ],
+    series:[{name:'PR Inflow',type:'area',data:inflow},{name:'PO Outflow',type:'line',data:outflow}],
     stroke:{width:[2,2],curve:'smooth',dashArray:[0,4]},
-    fill:{type:['gradient','solid'],gradient:{opacityFrom:0.4,opacityTo:0.05}},
+    fill:{type:['gradient','solid'],gradient:{opacityFrom:0.35,opacityTo:0.05}},
     colors:[palette[0],palette[2]],
     xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
     yaxis:{labels:{style:{fontSize:'10px'}}},
-    tooltip:{shared:true},
-    legend:{position:'top',fontSize:'11px'},
-    markers:{size:[0,4]},
+    tooltip:{shared:true,y:{formatter:v=>v+' PRs'}},
+    legend:{position:'top',fontSize:'11px'},markers:{size:[0,4]},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
   });
 }
 
-function renderPrCapexChart(mode, data) {
-  data = data || getFilteredData();
-  const capex = months.map(m=>{
-    const d=data.filter(r=>r.month===m&&r.capex);
-    return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));
-  });
-  const opex = months.map(m=>{
-    const d=data.filter(r=>r.month===m&&!r.capex);
-    return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));
-  });
-  renderApex('prCapexChart', {
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans',stacked:false},
+function renderPrCapexChart(data) {
+  const mode=globalMetric==='value'?'value':prCapexMetric;
+  const capex=months.map(m=>{const d=data.filter(r=>r.month===m&&r.capex); return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  const opex =months.map(m=>{const d=data.filter(r=>r.month===m&&!r.capex);return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  renderApex('prCapexChart',{
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
     series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],
     colors:[palette[0],palette[2]],
     xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    plotOptions:{bar:{borderRadius:3,columnWidth:'55%'}},
-    dataLabels:{enabled:false},
-    legend:{position:'top',fontSize:'11px'},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:3,columnWidth:'55%'}},dataLabels:{enabled:false},
+    legend:{position:'top',fontSize:'11px'},grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v}}
   });
 }
 
 function renderPrAgeingChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'ageing');
-  const cnts = ageingBuckets.map(b=>agg[b]?agg[b].count:0);
-  const colors = [palette[2],palette[3],palette[0],palette[6],palette[4],palette[4]];
-  renderApex('prAgeingChart', {
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'PRs',data:cnts}],
-    colors:[...colors],
-    xaxis:{categories:ageingBuckets,labels:{style:{fontSize:'10px'},rotate:-20}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
+  let subset=data;
+  if(prAgeingStage==='rfq')   subset=data.filter(r=>r.hasRfq);
+  else if(prAgeingStage==='offer') subset=data.filter(r=>r.hasOffer);
+  else if(prAgeingStage==='tr')    subset=data.filter(r=>r.hasTr);
+  else if(prAgeingStage==='ra')    subset=data.filter(r=>r.hasRa);
+  else if(prAgeingStage==='nfa')   subset=data.filter(r=>r.hasNfa);
+  else if(prAgeingStage==='po')    subset=data.filter(r=>r.hasPo);
+  const mode=globalMetric;
+  const agg=aggBy(subset,'ageing');
+  const vals=ageingBuckets.map(b=>mode==='count'?(agg[b]?.count||0):Math.round(agg[b]?.value||0));
+  renderApex('prAgeingChart',{
+    chart:{type:'bar',height:240,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'PRs':'Value (L)',data:vals}],
+    colors:[palette[2],palette[3],palette[0],palette[6],palette[4],palette[4]],
+    xaxis:{categories:ageingBuckets,labels:{style:{fontSize:'9px'},rotate:-20}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
     plotOptions:{bar:{borderRadius:4,distributed:true,columnWidth:'60%'}},
-    dataLabels:{enabled:false},
-    legend:{show:false},
+    dataLabels:{enabled:false},legend:{show:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>v+' PRs'}}
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
   });
 }
 
 function renderPrValueBucketChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'valueBucket');
-  const cnts = valueBuckets.map(b=>agg[b]?agg[b].count:0);
-  renderApex('prValueBucketChart', {
+  const mode=globalMetric;
+  const agg=aggBy(data,'valueBucket');
+  const vals=valueBuckets.map(b=>mode==='count'?(agg[b]?.count||0):Math.round(agg[b]?.value||0));
+  renderApex('prValueBucketChart',{
     chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:cnts,
-    labels:valueBuckets,
-    colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:(v,{w,seriesIndex})=>v+' PRs ('+Math.round(v/data.length*100)+'%)'}},
+    series:vals,labels:valueBuckets,colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},dataLabels:{style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:v=>mode==='count'?v+' PRs':'₹'+v+' L'}},
     plotOptions:{pie:{donut:{size:'55%',labels:{show:true,total:{show:true,label:'Total',fontSize:'12px',formatter:()=>data.length}}}}}
   });
 }
 
-function renderPrLocationChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'location');
-  const locs = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
-  const vals = locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
-  renderApex('prLocationChart', {
+function renderPrLocationChart(data) {
+  const mode=globalMetric==='value'?'value':prLocationMetric;
+  const agg=aggBy(data,'location');
+  const locs=Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
+  const vals=locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
+  renderApex('prLocationChart',{
     chart:{type:'bar',height:300,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'PRs':'Value (L)',data:vals}],
-    colors:[palette[1]],
+    series:[{name:mode==='count'?'PRs':'Value (L)',data:vals}],colors:[palette[1]],
     xaxis:{categories:locs,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},
-    dataLabels:{enabled:false},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},dataLabels:{enabled:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
     tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
   });
 }
 
 function renderPrMonthTable(data) {
-  data = data || getFilteredData();
-  const el = document.getElementById('prMonthTable');
-  if(!el) return;
-  const rows = months.map(m => {
-    const open = data.filter(r=>r.month===m&&r.status!=='Cancelled'&&r.status!=='Closed').length;
-    const closed = data.filter(r=>r.month===m&&(r.status==='Cancelled'||r.status==='Closed')).length;
-    const total = data.filter(r=>r.month===m).length;
-    const val = data.filter(r=>r.month===m).reduce((a,r)=>a+r.value,0);
-    return {m,open,closed,total,val:Math.round(val)};
+  const el=document.getElementById('prMonthTable'); if(!el) return;
+  const rows=months.map(m=>{
+    const ms=data.filter(r=>r.month===m);
+    const open=ms.filter(r=>r.status==='Open').length;
+    const closed=ms.filter(r=>r.status==='Closed').length;
+    return {m,total:ms.length,open,closed,val:Math.round(ms.reduce((a,r)=>a+r.value,0))};
   });
-  el.innerHTML = `<thead><tr>
-    <th>Month</th><th>Total</th><th>Open</th><th>Closed</th><th>Value (L)</th><th>Status</th>
-  </tr></thead><tbody>${rows.map(r=>`<tr>
-    <td><strong>${r.m}</strong></td>
-    <td><strong>${r.total}</strong></td>
-    <td><span class="badge-open">${r.open}</span></td>
-    <td><span class="badge-closed">${r.closed}</span></td>
-    <td>₹ ${r.val.toLocaleString()}</td>
-    <td style="width:80px"><div style="background:#e2e5ef;border-radius:4px;height:6px"><div style="background:var(--blue);width:${r.total>0?Math.round(r.open/r.total*100):0}%;height:6px;border-radius:4px"></div></div></td>
-  </tr>`).join('')}</tbody>`;
+  el.innerHTML=`<thead><tr><th>Month</th><th>Total</th><th>Open</th><th>Closed</th><th>Value (₹ L)</th><th>Open %</th></tr></thead>
+  <tbody>${rows.map(r=>`<tr><td><strong>${r.m}</strong></td><td><strong>${r.total}</strong></td>
+  <td><span class="badge-open">${r.open}</span></td><td><span class="badge-closed">${r.closed}</span></td>
+  <td>₹ ${r.val.toLocaleString()}</td>
+  <td style="min-width:70px"><div style="background:#e2e5ef;border-radius:4px;height:6px"><div style="background:var(--blue);width:${r.total>0?Math.round(r.open/r.total*100):0}%;height:6px;border-radius:4px"></div></div><span style="font-size:9px;color:var(--text3)">${r.total>0?Math.round(r.open/r.total*100):0}%</span></td></tr>`).join('')}</tbody>`;
 }
 
 function renderPrMaterialChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'material');
-  const mats = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
-  const vals = mats.map(m=>Math.round(agg[m].value));
-  const total = vals.reduce((a,v)=>a+v,0);
-  renderApex('prMaterialChart', {
+  const mode=globalMetric;
+  const agg=aggBy(data,'material');
+  const mats=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
+  const vals=mats.map(m=>mode==='count'?agg[m].count:Math.round(agg[m].value));
+  renderApex('prMaterialChart',{
     chart:{type:'pie',height:280,fontFamily:'DM Sans'},
-    series:vals,
-    labels:mats,
-    colors:palette,
+    series:vals,labels:mats,colors:palette,
     legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{formatter:(v,{w,seriesIndex})=>Math.round(v)+'%',style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:(v)=>'₹'+v+' L'}}
+    dataLabels:{formatter:v=>Math.round(v)+'%',style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:v=>mode==='count'?v+' PRs':'₹'+v+' L'}}
   });
 }
 
-function renderPrBuyerChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'buyer');
-  let sorted = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
-  if(mode==='bottom') sorted = sorted.reverse();
-  const top = sorted.slice(0,10);
-  renderApex('prBuyerChart', {
+function renderPrBuyerChart(data) {
+  const mode=globalMetric==='value'?'value':prBuyerMetric;
+  const agg=aggBy(data,'buyer');
+  let sorted=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
+  if(prBuyerMode==='bottom') sorted=sorted.reverse();
+  const top=sorted.slice(0,10);
+  renderApex('prBuyerChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'PRs',data:top.map(b=>agg[b].count)}],
-    colors:[mode==='top'?palette[0]:palette[4]],
+    series:[{name:mode==='count'?'PRs':'Value (L)',data:top.map(b=>mode==='count'?agg[b].count:Math.round(agg[b].value))}],
+    colors:[prBuyerMode==='top'?palette[0]:palette[4]],
     xaxis:{categories:top.map(b=>b.split(' ')[0]),labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
-    dataLabels:{enabled:false},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>v+' PRs'}}
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
   });
 }
 
 // ════════════════════════════════════════════════
-//  PO DASHBOARD CHARTS
+//  PO DASHBOARD
 // ════════════════════════════════════════════════
 function renderPoCharts() {
-  const data = getFilteredData();
-  renderPoCategoryChart('count',data);
-  renderPoTatChart(data);
-  renderPoMonthlyChart('count',data);
-  renderPoTatTrendChart(data);
-  renderPoCapexChart(data);
-  renderPoCountryChart(data);
-  renderPoCurrencyChart(data);
-  renderPoLocationChart('count',data);
-  renderPoValueBucketChart(data);
-  renderPoBuyerChart('top',data);
-  renderPoVendorChart('top',data);
-  renderPoMaterialChart(data);
-  renderPoMaterialRankChart(data);
+  const data=getFilteredData();
+  updatePoKpis(data); renderPoCategoryChart(data); renderPoTatChart(data);
+  renderPoMonthlyChart(data); renderPoTatTrendChart(data); renderPoCapexChart(data);
+  renderPoCountryChart(data); renderPoCurrencyChart(data); renderPoLocationChart(data);
+  renderPoValueBucketChart(data); renderPoBuyerChart(data); renderPoVendorChart(data);
+  renderPoMaterialChart(data); renderPoMaterialRankChart(data);
 }
 
-function renderPoCategoryChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'category');
-  const cats = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count).slice(0,10);
-  const vals = cats.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value));
-  renderApex('poCategoryChart', {
+function updatePoKpis(data) {
+  const total   =data.length;
+  const totVal  =data.reduce((a,r)=>a+r.value,0);
+  const totItems=data.reduce((a,r)=>a+(r.items||1),0);
+  const avgTAT  =total>0?(data.reduce((a,r)=>a+r.tat,0)/total).toFixed(1):0;
+  const nonZeroM=months.filter(m=>data.some(r=>r.month===m)).length||1;
+  const avgMonthlyPO =(total/nonZeroM).toFixed(1);
+  const avgMonthlyVal=Math.round(totVal/nonZeroM);
+  const avgValPO =total>0?Math.round(totVal/total):0;
+  const avgItemsPO=total>0?(totItems/total).toFixed(2):0;
+  const lvPOs   =data.filter(r=>r.valueBucket==='0–3L');
+  const lvPct   =total>0?(lvPOs.length/total*100).toFixed(1):0;
+  const importPOs=data.filter(r=>r.isImport);
+  const domPOs  =data.filter(r=>!r.isImport);
+  const importVal=importPOs.reduce((a,r)=>a+r.value,0);
+  const uVendors=new Set(data.map(r=>r.vendor)).size;
+  const uCountries=new Set(data.map(r=>r.country)).size;
+
+  if(globalMetric==='count'){
+    setText('kpi-total-po',total.toLocaleString());
+    setText('kpi-po-items',totItems.toLocaleString());
+    setText('kpi-po-value','₹ '+Math.round(totVal/100)/10+' Cr');
+    setText('kpi-avg-tat',avgTAT);
+    setText('kpi-monthly-po',avgMonthlyPO);
+    setText('kpi-monthly-val','₹ '+Math.round(avgMonthlyVal/100)/10+' Cr');
+  } else {
+    setText('kpi-total-po','₹ '+Math.round(totVal)+' L');
+    setText('kpi-po-items',totItems.toLocaleString());
+    setText('kpi-po-value','₹ '+Math.round(totVal/100)/10+' Cr');
+    setText('kpi-avg-tat',avgTAT);
+    setText('kpi-monthly-po',avgMonthlyPO);
+    setText('kpi-monthly-val','₹ '+Math.round(avgMonthlyVal/100)/10+' Cr');
+  }
+  const row2=document.querySelectorAll('#dash-po .kpi-row.six')[1];
+  if(row2){
+    const cards=row2.querySelectorAll('.kpi-card');
+    if(cards[0]){cards[0].querySelector('.kpi-value').textContent='₹ '+avgValPO+' L';cards[0].querySelector('.kpi-sub').textContent='Across all POs';}
+    if(cards[1]){cards[1].querySelector('.kpi-value').textContent=avgItemsPO;cards[1].querySelector('.kpi-sub').textContent='Line items avg';}
+    if(cards[2]){cards[2].querySelector('.kpi-value').textContent=lvPct+'%';cards[2].querySelector('.kpi-sub').textContent=lvPOs.length+' POs below ₹3L';}
+    if(cards[3]){cards[3].querySelector('.kpi-value').textContent=domPOs.length.toLocaleString();cards[3].querySelector('.kpi-sub').textContent=(total>0?(domPOs.length/total*100).toFixed(1):0)+'% of total';}
+    if(cards[4]){cards[4].querySelector('.kpi-value').textContent=importPOs.length.toLocaleString();cards[4].querySelector('.kpi-sub').textContent='₹ '+Math.round(importVal/100)/10+' Cr ('+(total>0?(importPOs.length/total*100).toFixed(1):0)+'%)';}
+    if(cards[5]){cards[5].querySelector('.kpi-value').textContent=uVendors;cards[5].querySelector('.kpi-sub').textContent=uCountries+' countries';}
+  }
+}
+
+function renderPoCategoryChart(data) {
+  const mode=globalMetric==='value'?'value':poCategoryMetric;
+  const agg=aggBy(data,'category');
+  const cats=['Supply','Service','Others'];
+  const vals=cats.map(c=>mode==='count'?(agg[c]?.count||0):Math.round(agg[c]?.value||0));
+  renderApex('poCategoryChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
-    colors:[palette[1]],
-    xaxis:{categories:cats,labels:{style:{fontSize:'10px'},rotate:-30}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
-    dataLabels:{enabled:false},
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],colors:[palette[1]],
+    xaxis:{categories:cats,labels:{style:{fontSize:'11px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:5,columnWidth:'45%'}},dataLabels:{enabled:true,style:{fontSize:'11px'}},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
     tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
 }
 
 function renderPoTatChart(data) {
-  data = data || getFilteredData();
-  const stages = ['PR→RFQ','RFQ→Offer','Offer→TR','TR→RA','RA→NFA','NFA→PO'];
-  const baseTotal = data.reduce((a,r)=>a+r.tat,0)/(data.length||1);
-  const splits = [0.18,0.14,0.22,0.12,0.16,0.18];
-  const vals = splits.map(s=>Math.round(baseTotal*s*10)/10);
-  renderApex('poTatChart', {
+  const stages=['PR→RFQ','RFQ→Offer','Offer→TR','TR→RA','RA→NFA','NFA→PO'];
+  const avgs=stages.map(s=>{
+    const vals=data.filter(r=>r.stageTat&&r.stageTat[s]>0).map(r=>r.stageTat[s]);
+    return vals.length?Math.round(vals.reduce((a,v)=>a+v,0)/vals.length*10)/10:0;
+  });
+  renderApex('poTatChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'Avg Days',data:vals}],
-    colors:[palette[5]],
+    series:[{name:'Avg Days',data:avgs}],
+    colors:palette,
     xaxis:{categories:stages,labels:{style:{fontSize:'10px'}}},
     yaxis:{labels:{style:{fontSize:'10px'}},title:{text:'Days',style:{fontSize:'11px'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'55%'}},
-    dataLabels:{enabled:true,style:{fontSize:'10px'}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'55%',distributed:true}},
+    dataLabels:{enabled:true,style:{fontSize:'10px'}},legend:{show:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
     tooltip:{y:{formatter:v=>v+' days'}}
   });
 }
 
-function renderPoMonthlyChart(mode, data) {
-  data = data || getFilteredData();
-  const counts = months.map(m=>data.filter(r=>r.month===m).length);
-  const values = months.map(m=>Math.round(data.filter(r=>r.month===m).reduce((a,r)=>a+r.value,0)));
-  const vals = mode==='count'?counts:values;
-  renderApex('poMonthlyChart', {
+function renderPoMonthlyChart(data) {
+  const mode=globalMetric==='value'?'value':poMonthlyMetric;
+  const counts=months.map(m=>data.filter(r=>r.month===m).length);
+  const values=months.map(m=>Math.round(data.filter(r=>r.month===m).reduce((a,r)=>a+r.value,0)));
+  const vals=mode==='count'?counts:values;
+  renderApex('poMonthlyChart',{
     chart:{type:'area',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
-    colors:[palette[0]],
-    stroke:{width:2,curve:'smooth'},
-    fill:{type:'gradient',gradient:{opacityFrom:0.35,opacityTo:0.05}},
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],colors:[palette[0]],
+    stroke:{width:2,curve:'smooth'},fill:{type:'gradient',gradient:{opacityFrom:0.35,opacityTo:0.05}},
     xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
     yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    markers:{size:4,strokeWidth:2},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    markers:{size:4,strokeWidth:2},grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
     tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
 }
 
 function renderPoTatTrendChart(data) {
-  data = data || getFilteredData();
-  const avgs = months.map(m=>{
-    const d=data.filter(r=>r.month===m);
-    if(!d.length) return 0;
+  const avgs=months.map(m=>{
+    const d=data.filter(r=>r.month===m); if(!d.length) return null;
     return Math.round(d.reduce((a,r)=>a+r.tat,0)/d.length*10)/10;
   });
-  renderApex('poTatTrendChart', {
+  renderApex('poTatTrendChart',{
     chart:{type:'line',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[
-      {name:'Avg TAT',data:avgs},
-      {name:'Target',data:months.map(()=>17)}
-    ],
+    series:[{name:'Avg TAT',data:avgs},{name:'Target',data:months.map(()=>18)}],
     stroke:{width:[2,2],curve:'smooth',dashArray:[0,5]},
     colors:[palette[3],palette[4]],
     xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
     yaxis:{labels:{style:{fontSize:'10px'}},title:{text:'Days',style:{fontSize:'11px'}}},
-    annotations:{yaxis:[{y:17,borderColor:palette[4],label:{text:'Target 17d',style:{fontSize:'10px',color:palette[4]}}}]},
-    markers:{size:[4,0]},
-    legend:{position:'top',fontSize:'11px'},
+    markers:{size:[4,0]},legend:{position:'top',fontSize:'11px'},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{shared:true,y:{formatter:v=>v+' days'}}
+    tooltip:{shared:true,y:{formatter:v=>v!=null?v+' days':'N/A'}}
   });
 }
 
 function renderPoCapexChart(data) {
-  data = data || getFilteredData();
-  const capex = months.map(m=>Math.round(data.filter(r=>r.month===m&&r.capex).reduce((a,r)=>a+r.value,0)));
-  const opex = months.map(m=>Math.round(data.filter(r=>r.month===m&&!r.capex).reduce((a,r)=>a+r.value,0)));
-  renderApex('poCapexChart', {
+  const mode=globalMetric==='value'?'value':poCapexMetric;
+  const capex=months.map(m=>{const d=data.filter(r=>r.month===m&&r.capex); return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  const opex =months.map(m=>{const d=data.filter(r=>r.month===m&&!r.capex);return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  renderApex('poCapexChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans',stacked:true},
-    series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],
-    colors:[palette[0],palette[2]],
+    series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],colors:[palette[0],palette[2]],
     xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>'₹'+v}},
-    plotOptions:{bar:{borderRadius:0,columnWidth:'55%'}},
-    dataLabels:{enabled:false},
-    legend:{position:'top',fontSize:'11px'},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{columnWidth:'55%'}},dataLabels:{enabled:false},
+    legend:{position:'top',fontSize:'11px'},grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
   });
 }
 
 function renderPoCountryChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'country');
-  const ctrs = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
-  const vals = ctrs.map(c=>Math.round(agg[c].value));
-  renderApex('poCountryChart', {
-    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:vals,
-    labels:ctrs,
-    colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{style:{fontSize:'10px'}},
-    plotOptions:{pie:{donut:{size:'50%',labels:{show:true,total:{show:true,label:'Countries',fontSize:'11px',formatter:()=>ctrs.length}}}}}
+  const mode=globalMetric==='value'?'value':poCountryMetric;
+  const agg=aggBy(data,'country');
+  const ctrs=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
+  const vals=ctrs.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value));
+  renderApex('poCountryChart',{
+    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
+    xaxis:{categories:ctrs,labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'55%',distributed:true}},
+    colors:palette,legend:{show:false},dataLabels:{enabled:false},
+    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
 }
 
 function renderPoCurrencyChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'currency');
-  const curs = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
-  const vals = curs.map(c=>Math.round(agg[c].value));
-  renderApex('poCurrencyChart', {
+  const mode=globalMetric;
+  const agg=aggBy(data,'currency');
+  const curs=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
+  const vals=curs.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value));
+  renderApex('poCurrencyChart',{
     chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:vals,
-    labels:curs,
-    colors:palette2,
-    legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{style:{fontSize:'10px'}},
+    series:vals,labels:curs,colors:palette2,
+    legend:{position:'bottom',fontSize:'10px'},dataLabels:{style:{fontSize:'10px'}},
     plotOptions:{pie:{donut:{size:'50%',labels:{show:true,total:{show:true,label:'Currencies',fontSize:'11px',formatter:()=>curs.length}}}}}
   });
 }
 
-function renderPoLocationChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'location');
-  const locs = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
-  const vals = locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
-  renderApex('poLocationChart', {
+function renderPoLocationChart(data) {
+  const mode=globalMetric==='value'?'value':poLocationMetric;
+  const agg=aggBy(data,'location');
+  const locs=Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
+  const vals=locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
+  renderApex('poLocationChart',{
     chart:{type:'bar',height:300,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
-    colors:[palette[1]],
+    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],colors:[palette[1]],
     xaxis:{categories:locs,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},
-    dataLabels:{enabled:false},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},dataLabels:{enabled:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
     tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
 }
 
 function renderPoValueBucketChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'valueBucket');
-  const cnts = valueBuckets.map(b=>agg[b]?agg[b].count:0);
-  renderApex('poValueBucketChart', {
+  const mode=globalMetric;
+  const agg=aggBy(data,'valueBucket');
+  const vals=valueBuckets.map(b=>mode==='count'?(agg[b]?.count||0):Math.round(agg[b]?.value||0));
+  renderApex('poValueBucketChart',{
     chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:cnts,
-    labels:valueBuckets,
-    colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:v=>v+' POs'}},
+    series:vals,labels:valueBuckets,colors:palette,
+    legend:{position:'bottom',fontSize:'10px'},dataLabels:{style:{fontSize:'10px'}},
+    tooltip:{y:{formatter:v=>mode==='count'?v+' POs':'₹'+v+' L'}},
     plotOptions:{pie:{donut:{size:'55%',labels:{show:true,total:{show:true,label:'Total POs',fontSize:'11px',formatter:()=>data.length}}}}}
   });
 }
 
-function renderPoBuyerChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'buyer');
-  let sorted = Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
-  if(mode==='bottom') sorted=sorted.reverse();
-  const top = sorted.slice(0,10);
-  renderApex('poBuyerChart', {
+function renderPoBuyerChart(data) {
+  const mode=globalMetric==='value'?'value':poBuyerMetric;
+  const agg=aggBy(data,'buyer');
+  let sorted=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
+  if(poBuyerMode==='bottom') sorted=sorted.reverse();
+  const top=sorted.slice(0,10);
+  renderApex('poBuyerChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'POs',data:top.map(b=>agg[b].count)}],
-    colors:[mode==='top'?palette[0]:palette[4]],
+    series:[{name:mode==='count'?'POs':'Value (L)',data:top.map(b=>mode==='count'?agg[b].count:Math.round(agg[b].value))}],
+    colors:[poBuyerMode==='top'?palette[0]:palette[4]],
     xaxis:{categories:top.map(b=>b.split(' ')[0]),labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
-    dataLabels:{enabled:false},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>v+' POs'}}
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
 }
 
-function renderPoVendorChart(mode, data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'vendor');
-  let sorted = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
-  if(mode==='bottom') sorted=sorted.reverse();
-  const top = sorted.slice(0,10);
-  renderApex('poVendorChart', {
+function renderPoVendorChart(data) {
+  const mode=globalMetric==='value'?'value':poVendorMetric;
+  const agg=aggBy(data,'vendor');
+  let sorted=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
+  if(poVendorMode==='bottom') sorted=sorted.reverse();
+  const top=sorted.slice(0,10);
+  renderApex('poVendorChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'Value (L)',data:top.map(v=>Math.round(agg[v].value))}],
-    colors:[mode==='top'?palette[5]:palette[3]],
+    series:[{name:mode==='count'?'POs':'Value (L)',data:top.map(v=>mode==='count'?agg[v].count:Math.round(agg[v].value))}],
+    colors:[poVendorMode==='top'?palette[5]:palette[3]],
     xaxis:{categories:top.map(v=>v.length>15?v.slice(0,14)+'…':v),labels:{style:{fontSize:'9px'},rotate:-25}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>'₹'+v}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
-    dataLabels:{enabled:false},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>'₹'+v+' L'}}
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
 }
 
 function renderPoMaterialChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'material');
-  const mats = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
-  const vals = mats.map(m=>Math.round(agg[m].value));
-  renderApex('poMaterialChart', {
+  const mode=globalMetric;
+  const agg=aggBy(data,'material');
+  const mats=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
+  const vals=mats.map(m=>mode==='count'?agg[m].count:Math.round(agg[m].value));
+  renderApex('poMaterialChart',{
     chart:{type:'pie',height:280,fontFamily:'DM Sans'},
-    series:vals,
-    labels:mats,
-    colors:palette,
+    series:vals,labels:mats,colors:palette,
     legend:{position:'bottom',fontSize:'10px'},
     dataLabels:{formatter:v=>Math.round(v)+'%',style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:v=>'₹'+v+' L'}}
+    tooltip:{y:{formatter:v=>mode==='count'?v+' POs':'₹'+v+' L'}}
   });
 }
 
 function renderPoMaterialRankChart(data) {
-  data = data || getFilteredData();
-  const agg = aggBy(data,'material');
-  const mats = Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,10);
-  renderApex('poMaterialRankChart', {
+  const mode=globalMetric;
+  const agg=aggBy(data,'material');
+  const mats=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,10);
+  renderApex('poMaterialRankChart',{
     chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'Value (L)',data:mats.map(m=>Math.round(agg[m].value))}],
+    series:[{name:mode==='count'?'POs':'Value (L)',data:mats.map(m=>mode==='count'?agg[m].count:Math.round(agg[m].value))}],
     colors:[palette[2]],
     xaxis:{categories:mats.map(m=>m.length>14?m.slice(0,13)+'…':m),labels:{style:{fontSize:'9px'},rotate:-25}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>'₹'+v}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},
-    dataLabels:{enabled:false},
+    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
+    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
     grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>'₹'+v+' L'}}
+    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
   });
+}
+
+// ════════════════════════════════════════════════
+//  PATCH HEADERS (ageing stage + buyer/vendor toggles)
+// ════════════════════════════════════════════════
+function patchHeaders() {
+  // Ageing chart — add stage selector buttons
+  const ageCard=document.getElementById('prAgeingChart')?.closest('.chart-card');
+  if(ageCard&&!ageCard.dataset.patched){
+    ageCard.dataset.patched='1';
+    ageCard.querySelector('.chart-header').innerHTML=`
+      <div><div class="chart-title">Ageing Distribution</div><div class="chart-subtitle">PRs by ageing bucket</div></div>
+      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
+        <button class="chart-btn active" onclick="setAgeingStage('all',this)">All</button>
+        <button class="chart-btn" onclick="setAgeingStage('rfq',this)">RFQ</button>
+        <button class="chart-btn" onclick="setAgeingStage('offer',this)">Offer</button>
+        <button class="chart-btn" onclick="setAgeingStage('tr',this)">TR</button>
+        <button class="chart-btn" onclick="setAgeingStage('ra',this)">RA</button>
+        <button class="chart-btn" onclick="setAgeingStage('nfa',this)">NFA</button>
+        <button class="chart-btn" onclick="setAgeingStage('po',this)">PO</button>
+      </div>`;
+  }
+  // PR Buyer — add Count/Value toggle
+  const prBuyerCard=document.getElementById('prBuyerChart')?.closest('.chart-card');
+  if(prBuyerCard&&!prBuyerCard.dataset.patched){
+    prBuyerCard.dataset.patched='1';
+    prBuyerCard.querySelector('.chart-header').innerHTML=`
+      <div><div class="chart-title">Buyer Performance</div><div class="chart-subtitle">PR handled per buyer</div></div>
+      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
+        <button class="chart-btn active" onclick="switchBuyerView('pr','top',this)">Top 10</button>
+        <button class="chart-btn" onclick="switchBuyerView('pr','bottom',this)">Bottom 10</button>
+        <button class="chart-btn active" onclick="switchBuyerMetric('pr','count',this)" style="margin-left:4px">Count</button>
+        <button class="chart-btn" onclick="switchBuyerMetric('pr','value',this)">Value</button>
+      </div>`;
+  }
+  // PO Buyer — add Count/Value toggle
+  const poBuyerCard=document.getElementById('poBuyerChart')?.closest('.chart-card');
+  if(poBuyerCard&&!poBuyerCard.dataset.patched){
+    poBuyerCard.dataset.patched='1';
+    poBuyerCard.querySelector('.chart-header').innerHTML=`
+      <div><div class="chart-title">Buyer Ranking</div><div class="chart-subtitle">POs closed per buyer</div></div>
+      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
+        <button class="chart-btn active" onclick="switchBuyerView('po','top',this)">Top 10</button>
+        <button class="chart-btn" onclick="switchBuyerView('po','bottom',this)">Bottom 10</button>
+        <button class="chart-btn active" onclick="switchBuyerMetric('po','count',this)" style="margin-left:4px">Count</button>
+        <button class="chart-btn" onclick="switchBuyerMetric('po','value',this)">Value</button>
+      </div>`;
+  }
+  // PO Vendor — add Count/Value toggle
+  const poVendorCard=document.getElementById('poVendorChart')?.closest('.chart-card');
+  if(poVendorCard&&!poVendorCard.dataset.patched){
+    poVendorCard.dataset.patched='1';
+    poVendorCard.querySelector('.chart-header').innerHTML=`
+      <div><div class="chart-title">Vendor Ranking</div><div class="chart-subtitle">PO value by vendor</div></div>
+      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
+        <button class="chart-btn active" onclick="switchVendorView('top',this)">Top 10</button>
+        <button class="chart-btn" onclick="switchVendorView('bottom',this)">Bottom 10</button>
+        <button class="chart-btn active" onclick="switchVendorMetric('count',this)" style="margin-left:4px">Count</button>
+        <button class="chart-btn" onclick="switchVendorMetric('value',this)">Value</button>
+      </div>`;
+  }
+  // PO Country — add Count/Value toggle
+  const poCountryCard=document.getElementById('poCountryChart')?.closest('.chart-card');
+  if(poCountryCard&&!poCountryCard.dataset.patched){
+    poCountryCard.dataset.patched='1';
+    poCountryCard.querySelector('.chart-header').innerHTML=`
+      <div><div class="chart-title">Country Exposure</div><div class="chart-subtitle">PO distribution by country</div></div>
+      <div class="chart-actions">
+        <button class="chart-btn active" onclick="switchChart('poCountry','count',this)">Count</button>
+        <button class="chart-btn" onclick="switchChart('poCountry','value',this)">Value</button>
+      </div>`;
+  }
+  // PO Capex — add Count/Value toggle
+  const poCapexCard=document.getElementById('poCapexChart')?.closest('.chart-card');
+  if(poCapexCard&&!poCapexCard.dataset.patched){
+    poCapexCard.dataset.patched='1';
+    poCapexCard.querySelector('.chart-header').innerHTML=`
+      <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">PO split monthly</div></div>
+      <div class="chart-actions">
+        <button class="chart-btn active" onclick="switchChart('poCapex','count',this)">Count</button>
+        <button class="chart-btn" onclick="switchChart('poCapex','value',this)">Value</button>
+      </div>`;
+  }
 }
 
 // ════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
+  patchHeaders();
   buildFilterPanel();
   renderPrCharts();
 });
