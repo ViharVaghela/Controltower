@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>P2P Intelligence Hub</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.44.0/apexcharts.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* ── System font stack — no Google Fonts needed ── */
 :root {
+  --ff: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ffm: 'Courier New', Courier, monospace;
   --bg: #f0f2f7;
   --surface: #ffffff;
   --surface2: #f7f8fc;
@@ -24,374 +25,289 @@
   --text: #1a2236;
   --text2: #4b5773;
   --text3: #8a94a8;
-  --shadow: 0 1px 4px rgba(30,58,110,0.08), 0 4px 16px rgba(30,58,110,0.04);
+  --shadow: 0 1px 4px rgba(30,58,110,0.08),0 4px 16px rgba(30,58,110,0.04);
   --shadow-md: 0 4px 24px rgba(30,58,110,0.12);
   --radius: 12px;
-  --radius-sm: 8px;
 }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--ff);background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(30,58,110,0.06);}
+.header-left{display:flex;align-items:center;gap:20px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--teal));border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:18px;height:18px;fill:white;}
+.logo-title{font-size:16px;font-weight:700;color:var(--navy);letter-spacing:-.3px;}
+.logo-sub{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.8px;text-transform:uppercase;}
+.divider-v{width:1px;height:28px;background:var(--border);}
+.tabs{display:flex;gap:2px;}
+.tab-btn{padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--ff);background:transparent;color:var(--text2);transition:all .18s;}
+.tab-btn:hover{background:var(--blue-light);color:var(--blue);}
+.tab-btn.active{background:var(--blue);color:white;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.filter-toggle-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;border:1.5px solid var(--blue);background:var(--blue-light);color:var(--blue);cursor:pointer;font-size:12px;font-weight:600;font-family:var(--ff);transition:all .18s;}
+.filter-toggle-btn:hover{background:var(--blue);color:white;}
+.filter-toggle-btn svg{width:14px;height:14px;}
+.filter-badge{background:var(--blue);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;display:none;}
+.filter-badge.show{display:inline-block;}
+.date-chip{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text2);font-weight:500;}
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 13px;
-  min-height: 100vh;
-}
+/* FILTER PANEL */
+.filter-overlay{position:fixed;inset:0;background:rgba(15,23,42,.3);z-index:300;opacity:0;pointer-events:none;transition:opacity .22s;}
+.filter-overlay.open{opacity:1;pointer-events:all;}
+.filter-panel{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:var(--surface);z-index:400;transition:right .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:var(--shadow-md);}
+.filter-panel.open{right:0;}
+.filter-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.filter-header-title{font-size:15px;font-weight:700;color:var(--navy);}
+.filter-actions{display:flex;gap:8px;}
+.btn-clear{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--ff);font-weight:500;}
+.btn-apply{padding:6px 16px;border-radius:6px;border:none;background:var(--blue);color:white;cursor:pointer;font-size:12px;font-family:var(--ff);font-weight:600;}
+.btn-close{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:18px;line-height:1;}
+.filter-body{flex:1;overflow-y:auto;padding:16px;}
+.filter-body::-webkit-scrollbar{width:4px;}
+.filter-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.filter-group{margin-bottom:10px;}
+.filter-group-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:8px;cursor:pointer;border:1px solid var(--border);transition:all .15s;user-select:none;}
+.filter-group-header:hover{background:var(--blue-light);border-color:var(--blue-mid);}
+.filter-group-header.open{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-color:transparent;}
+.filter-group-label{font-size:12px;font-weight:600;color:var(--text);}
+.filter-group-meta{display:flex;align-items:center;gap:8px;}
+.filter-count-badge{background:var(--blue);color:white;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;display:none;}
+.filter-count-badge.show{display:inline-block;}
+.filter-chevron{width:16px;height:16px;color:var(--text3);transition:transform .2s;}
+.filter-group-header.open .filter-chevron{transform:rotate(180deg);}
+.filter-dropdown{border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;background:var(--surface);overflow:hidden;max-height:0;transition:max-height .22s ease;}
+.filter-dropdown.open{max-height:260px;overflow-y:auto;}
+.filter-search{padding:8px 12px;border-bottom:1px solid var(--border);}
+.filter-search input{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--ff);color:var(--text);background:var(--surface2);outline:none;}
+.filter-search input:focus{border-color:var(--blue);}
+.filter-option{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;transition:background .12s;}
+.filter-option:hover{background:var(--blue-light);}
+.filter-option input[type=checkbox]{width:14px;height:14px;accent-color:var(--blue);cursor:pointer;}
+.filter-option label{font-size:12px;color:var(--text);cursor:pointer;flex:1;}
+.chips-area{padding:10px 0 4px 0;display:flex;flex-wrap:wrap;gap:6px;}
+.chip{display:flex;align-items:center;gap:5px;padding:3px 10px;background:var(--blue-light);border-radius:20px;font-size:11px;color:var(--blue);font-weight:500;border:1px solid var(--blue-mid);}
+.chip-remove{cursor:pointer;font-size:13px;line-height:1;color:var(--blue);background:none;border:none;padding:0;}
 
-/* ── HEADER ── */
-.header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 58px;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  box-shadow: 0 2px 8px rgba(30,58,110,0.06);
-}
+/* MAIN */
+.main{padding:20px 24px;max-width:1900px;margin:0 auto;}
+.dashboard{display:none;}
+.dashboard.active{display:block;}
 
-.header-left { display: flex; align-items: center; gap: 20px; }
+/* TOGGLE BAR */
+.toggle-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.section-title{font-size:14px;font-weight:700;color:var(--navy);}
+.toggle-group{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;}
+.toggle-btn{padding:5px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--ff);background:transparent;color:var(--text2);transition:all .15s;}
+.toggle-btn.active{background:var(--blue);color:white;}
 
-.logo {
-  display: flex; align-items: center; gap: 10px;
-}
-.logo-icon {
-  width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal));
-  border-radius: 8px; display: flex; align-items: center; justify-content: center;
-}
-.logo-icon svg { width: 18px; height: 18px; fill: white; }
-.logo-title { font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; }
-.logo-sub { font-size: 10px; color: var(--text3); font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; }
+/* KPI CARDS */
+.kpi-row{display:grid;gap:14px;margin-bottom:18px;}
+.kpi-row.eight{grid-template-columns:repeat(8,1fr);}
+.kpi-row.six{grid-template-columns:repeat(6,1fr);}
+.kpi-card{background:var(--surface);border-radius:var(--radius);padding:16px 18px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:box-shadow .18s;}
+.kpi-card:hover{box-shadow:var(--shadow-md);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;}
+.kpi-card.blue::before{background:var(--blue);}
+.kpi-card.teal::before{background:var(--teal);}
+.kpi-card.green::before{background:var(--green);}
+.kpi-card.amber::before{background:var(--amber);}
+.kpi-card.red::before{background:var(--red);}
+.kpi-card.purple::before{background:var(--purple);}
+.kpi-card.navy::before{background:var(--navy);}
+.kpi-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.kpi-value{font-size:22px;font-weight:700;color:var(--text);line-height:1;font-family:var(--ffm);}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:5px;}
+.kpi-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;}
+.kpi-badge.up{background:#d1fae5;color:#059669;}
+.kpi-badge.dn{background:#fee2e2;color:#dc2626;}
+.kpi-icon{position:absolute;right:14px;top:14px;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.kpi-icon.blue{background:#eff4ff;color:var(--blue);}
+.kpi-icon.teal{background:#ecfeff;color:var(--teal);}
+.kpi-icon.green{background:#d1fae5;color:var(--green);}
+.kpi-icon.amber{background:#fef3c7;color:var(--amber);}
+.kpi-icon.red{background:#fee2e2;color:var(--red);}
+.kpi-icon.purple{background:#ede9fe;color:var(--purple);}
+.kpi-icon svg{width:18px;height:18px;}
 
-.divider-v { width: 1px; height: 28px; background: var(--border); }
+/* PIPELINE */
+.pipeline-card{background:var(--surface);border-radius:var(--radius);padding:18px 24px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:18px;}
+.pipeline-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px;}
+.pipeline{display:flex;align-items:center;overflow-x:auto;}
+.pipeline-stage{flex:1;min-width:100px;text-align:center;padding:12px 8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:all .18s;}
+.pipeline-stage:first-child{border-radius:10px 0 0 10px;}
+.pipeline-stage:last-child{border-radius:0 10px 10px 0;}
+.pipeline-stage:hover{background:var(--blue-light);border-color:var(--blue-mid);z-index:1;}
+.pipeline-stage.active{background:var(--blue);border-color:var(--blue);}
+.pipeline-stage.active .ps-label,.pipeline-stage.active .ps-count{color:white;}
+.pipeline-stage.active .ps-pct{color:rgba(255,255,255,.75);}
+.ps-label{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;}
+.ps-count{font-size:20px;font-weight:700;color:var(--text);font-family:var(--ffm);margin:4px 0;}
+.ps-pct{font-size:11px;color:var(--text3);}
+.pipeline-arrow{width:0;height:0;flex-shrink:0;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:14px solid var(--border);position:relative;z-index:2;margin:0 -1px;}
+.pipeline-arrow::before{content:'';position:absolute;top:-22px;left:-16px;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:14px solid var(--surface2);}
 
-.tabs { display: flex; gap: 2px; }
-.tab-btn {
-  padding: 7px 18px; border-radius: 7px; border: none; cursor: pointer;
-  font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif;
-  background: transparent; color: var(--text2); transition: all 0.18s;
-}
-.tab-btn:hover { background: var(--blue-light); color: var(--blue); }
-.tab-btn.active { background: var(--blue); color: white; }
+/* CHART CARDS */
+.charts-grid{display:grid;gap:16px;margin-bottom:16px;}
+.charts-grid.two{grid-template-columns:1fr 1fr;}
+.charts-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.charts-grid.cols-2-3{grid-template-columns:2fr 3fr;}
+.chart-card{background:var(--surface);border-radius:var(--radius);padding:18px 20px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:8px;}
+.chart-title{font-size:13px;font-weight:600;color:var(--text);}
+.chart-subtitle{font-size:11px;color:var(--text3);margin-top:2px;}
+.chart-actions{display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;}
+.chart-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--ff);transition:all .15s;white-space:nowrap;}
+.chart-btn.active,.chart-btn:hover{background:var(--blue);color:white;border-color:var(--blue);}
+.chart-wrap{position:relative;width:100%;}
 
-.header-right { display: flex; align-items: center; gap: 10px; }
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{background:var(--surface2);padding:8px 12px;font-size:11px;font-weight:600;color:var(--text2);text-align:left;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px;}
+.data-table td{padding:9px 12px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--blue-light);}
+.badge-open{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;}
+.badge-closed{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;}
 
-.filter-toggle-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--blue);
-  background: var(--blue-light); color: var(--blue); cursor: pointer;
-  font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-  transition: all 0.18s;
-}
-.filter-toggle-btn:hover { background: var(--blue); color: white; }
-.filter-toggle-btn svg { width: 14px; height: 14px; }
-.filter-badge {
-  background: var(--blue); color: white; font-size: 10px; font-weight: 700;
-  padding: 1px 6px; border-radius: 10px; display: none;
-}
-.filter-badge.show { display: inline-block; }
+/* CANVAS SVG charts */
+.chart-svg{display:block;width:100%;overflow:visible;}
 
-.date-chip {
-  padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 6px; font-size: 11px; color: var(--text2); font-weight: 500;
-}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-/* ── FILTER PANEL ── */
-.filter-overlay {
-  position: fixed; inset: 0; background: rgba(15,23,42,0.3);
-  z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.22s;
-}
-.filter-overlay.open { opacity: 1; pointer-events: all; }
+@media(max-width:1400px){.kpi-row.eight{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:1100px){.charts-grid.three,.charts-grid.two{grid-template-columns:1fr 1fr;}.charts-grid.cols-2-3{grid-template-columns:1fr;}}
+@media(max-width:768px){.kpi-row.eight,.kpi-row.six{grid-template-columns:repeat(2,1fr);}.charts-grid.three,.charts-grid.two,.charts-grid.cols-2-3{grid-template-columns:1fr;}}
 
-.filter-panel {
-  position: fixed; top: 0; right: -420px; width: 420px; height: 100vh;
-  background: var(--surface); z-index: 400; transition: right 0.28s cubic-bezier(0.4,0,0.2,1);
-  display: flex; flex-direction: column; box-shadow: var(--shadow-md);
-}
-.filter-panel.open { right: 0; }
+/* ══════════════════════════════════════════════
+   LEADERBOARD ANALYTICS — CSS MODULE
+   All classes prefixed lb- to avoid conflicts
+══════════════════════════════════════════════ */
+.lb-header{background:linear-gradient(135deg,#0f1e3d 0%,#1e3a6e 50%,#1e40af 100%);border-radius:var(--radius);padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden;}
+.lb-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 70%);border-radius:50%;}
+.lb-header::after{content:'';position:absolute;bottom:-30px;left:30%;width:120px;height:120px;background:radial-gradient(circle,rgba(99,179,237,.08) 0%,transparent 70%);border-radius:50%;}
+.lb-header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.lb-title-wrap{display:flex;align-items:center;gap:12px;}
+.lb-trophy{width:44px;height:44px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,.4);}
+.lb-trophy svg{width:24px;height:24px;fill:white;}
+.lb-heading{font-size:20px;font-weight:800;color:white;letter-spacing:-.4px;}
+.lb-subheading{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;}
+.lb-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lb-toggle-group{display:flex;background:rgba(255,255,255,.1);border-radius:8px;padding:3px;gap:2px;}
+.lb-toggle-btn{padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--ff);background:transparent;color:rgba(255,255,255,.7);transition:all .18s;}
+.lb-toggle-btn:hover{background:rgba(255,255,255,.15);color:white;}
+.lb-toggle-btn.active{background:white;color:var(--navy);}
+.lb-toggle-btn.perf-top.active{background:linear-gradient(135deg,#10b981,#059669);color:white;}
+.lb-toggle-btn.perf-bottom.active{background:linear-gradient(135deg,#ef4444,#dc2626);color:white;}
+.lb-role-group{display:flex;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;gap:2px;}
+.lb-meta-row{display:flex;align-items:center;gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);}
+.lb-meta-item{display:flex;align-items:center;gap:6px;}
+.lb-meta-dot{width:8px;height:8px;border-radius:50%;}
+.lb-meta-label{font-size:11px;color:rgba(255,255,255,.55);}
 
-.filter-header {
-  padding: 18px 22px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.filter-header-title { font-size: 15px; font-weight: 700; color: var(--navy); }
-.filter-actions { display: flex; gap: 8px; }
-.btn-clear {
-  padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
-  background: transparent; color: var(--text2); cursor: pointer;
-  font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
-}
-.btn-apply {
-  padding: 6px 16px; border-radius: 6px; border: none;
-  background: var(--blue); color: white; cursor: pointer;
-  font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 600;
-}
-.btn-close {
-  width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
-  background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  color: var(--text2); font-size: 18px; line-height: 1;
-}
+/* Leaderboard widget card */
+.lb-grid{display:grid;gap:16px;margin-bottom:16px;}
+.lb-grid.two{grid-template-columns:1fr 1fr;}
+.lb-widget{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.lb-widget-header{padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.lb-widget-title-wrap{display:flex;align-items:center;gap:10px;}
+.lb-widget-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lb-widget-icon svg{width:16px;height:16px;}
+.lb-widget-title{font-size:13px;font-weight:700;color:var(--text);}
+.lb-widget-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.lb-widget-toggle{display:flex;gap:3px;}
+.lb-widget-btn{padding:3px 9px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:10px;font-family:var(--ff);font-weight:500;transition:all .12s;}
+.lb-widget-btn.active{background:var(--blue);color:white;border-color:var(--blue);}
 
-.filter-body { flex: 1; overflow-y: auto; padding: 16px; }
-.filter-body::-webkit-scrollbar { width: 4px; }
-.filter-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* Rank list */
+.lb-list{padding:8px 0;}
 
-.filter-group { margin-bottom: 10px; }
-.filter-group-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: var(--surface2); border-radius: 8px;
-  cursor: pointer; border: 1px solid var(--border); transition: all 0.15s;
-  user-select: none;
-}
-.filter-group-header:hover { background: var(--blue-light); border-color: var(--blue-mid); }
-.filter-group-header.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
-.filter-group-label { font-size: 12px; font-weight: 600; color: var(--text); }
-.filter-group-meta { display: flex; align-items: center; gap: 8px; }
-.filter-count-badge {
-  background: var(--blue); color: white; font-size: 10px; font-weight: 700;
-  padding: 1px 7px; border-radius: 10px; display: none;
-}
-.filter-count-badge.show { display: inline-block; }
-.filter-chevron { width: 16px; height: 16px; color: var(--text3); transition: transform 0.2s; }
-.filter-group-header.open .filter-chevron { transform: rotate(180deg); }
+/* Individual rank card */
+.lb-rank-card{display:flex;align-items:center;gap:10px;padding:9px 18px;transition:background .12s;cursor:default;position:relative;}
+.lb-rank-card:hover{background:var(--surface2);}
+.lb-rank-card.current-user{background:linear-gradient(90deg,rgba(37,99,235,.06) 0%,rgba(37,99,235,.02) 100%);border-left:3px solid var(--blue);}
+.lb-rank-card.current-user::before{content:'YOU';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:800;color:var(--blue);background:var(--blue-light);padding:2px 6px;border-radius:4px;letter-spacing:.5px;}
+.lb-rank-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;font-family:var(--ffm);}
+.lb-rank-num.r1{background:linear-gradient(135deg,#f59e0b,#d97706);color:white;box-shadow:0 2px 8px rgba(245,158,11,.4);}
+.lb-rank-num.r2{background:linear-gradient(135deg,#94a3b8,#64748b);color:white;box-shadow:0 2px 8px rgba(100,116,139,.3);}
+.lb-rank-num.r3{background:linear-gradient(135deg,#cd7c2f,#b45309);color:white;box-shadow:0 2px 8px rgba(180,83,9,.3);}
+.lb-rank-num.rn{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.lb-rank-medal{font-size:14px;margin-left:-4px;}
+.lb-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-location{font-size:10px;color:var(--text3);margin-top:1px;}
+.lb-bar-wrap{width:80px;flex-shrink:0;}
+.lb-bar-track{background:var(--border);border-radius:3px;height:5px;overflow:hidden;}
+.lb-bar-fill{height:5px;border-radius:3px;transition:width .4s ease;}
+.lb-pct-label{font-size:9px;color:var(--text3);margin-top:2px;text-align:right;}
+.lb-kpi-val{width:70px;text-align:right;flex-shrink:0;}
+.lb-kpi-num{font-size:12px;font-weight:700;color:var(--text);font-family:var(--ffm);}
+.lb-kpi-unit{font-size:9px;color:var(--text3);}
+.lb-trend{width:18px;flex-shrink:0;text-align:center;font-size:13px;}
+.lb-trend.up{color:#10b981;}
+.lb-trend.dn{color:#ef4444;}
+.lb-trend.st{color:#94a3b8;}
+.lb-separator{border:none;border-top:1px dashed var(--border);margin:4px 18px;}
 
-.filter-dropdown {
-  border: 1px solid var(--border); border-top: none;
-  border-radius: 0 0 8px 8px; background: var(--surface);
-  overflow: hidden; max-height: 0; transition: max-height 0.22s ease;
-}
-.filter-dropdown.open { max-height: 260px; overflow-y: auto; }
-.filter-search {
-  padding: 8px 12px; border-bottom: 1px solid var(--border);
-}
-.filter-search input {
-  width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
-  font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text);
-  background: var(--surface2); outline: none;
-}
-.filter-search input:focus { border-color: var(--blue); }
-.filter-option {
-  display: flex; align-items: center; gap: 9px; padding: 8px 14px;
-  cursor: pointer; transition: background 0.12s;
-}
-.filter-option:hover { background: var(--blue-light); }
-.filter-option input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--blue); cursor: pointer; }
-.filter-option label { font-size: 12px; color: var(--text); cursor: pointer; flex: 1; }
+/* "Your Rank" spotlight card (shown when user not in top/bottom list) */
+.lb-your-rank{margin:0 14px 10px;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(37,99,235,.07) 0%,rgba(8,145,178,.05) 100%);border:1.5px solid var(--blue-mid);position:relative;overflow:hidden;}
+.lb-your-rank::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(37,99,235,.1),transparent 70%);border-radius:50%;}
+.lb-your-rank-label{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.lb-your-rank-label svg{width:11px;height:11px;fill:var(--blue);}
+.lb-your-rank-row{display:flex;align-items:center;gap:10px;}
+.lb-your-rank-badge{background:linear-gradient(135deg,var(--blue),var(--teal));color:white;font-size:16px;font-weight:800;padding:8px 14px;border-radius:10px;font-family:var(--ffm);box-shadow:0 4px 12px rgba(37,99,235,.3);}
+.lb-your-rank-details{flex:1;}
+.lb-your-rank-name{font-size:13px;font-weight:700;color:var(--text);}
+.lb-your-rank-meta{display:flex;gap:12px;margin-top:4px;flex-wrap:wrap;}
+.lb-your-rank-chip{font-size:10px;color:var(--text2);background:white;border:1px solid var(--border);padding:2px 8px;border-radius:4px;}
+.lb-your-rank-chip.good{background:#d1fae5;color:#065f46;border-color:#a7f3d0;}
+.lb-your-rank-chip.avg{background:#fef3c7;color:#92400e;border-color:#fde68a;}
+.lb-your-rank-chip.poor{background:#fee2e2;color:#991b1b;border-color:#fca5a5;}
 
-.chips-area { padding: 10px 0 4px 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.chip {
-  display: flex; align-items: center; gap: 5px;
-  padding: 3px 10px; background: var(--blue-light); border-radius: 20px;
-  font-size: 11px; color: var(--blue); font-weight: 500; border: 1px solid var(--blue-mid);
-}
-.chip-remove {
-  cursor: pointer; font-size: 13px; line-height: 1; color: var(--blue);
-  background: none; border: none; padding: 0;
-}
+/* DOA widget special layout */
+.lb-doa-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 16px;}
+.lb-doa-card{background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border);}
+.lb-doa-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.lb-doa-entry{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.lb-doa-name{font-size:11px;color:var(--text);font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-doa-bar-outer{width:60px;height:5px;background:var(--border);border-radius:3px;margin:0 8px;}
+.lb-doa-bar-inner{height:5px;border-radius:3px;}
+.lb-doa-pct{font-size:10px;font-weight:700;width:32px;text-align:right;font-family:var(--ffm);}
 
-/* ── MAIN CONTENT ── */
-.main { padding: 20px 24px; max-width: 1900px; margin: 0 auto; }
+/* Responsive */
+@media(max-width:1100px){.lb-grid.two{grid-template-columns:1fr;}}
+@media(max-width:768px){.lb-header-top{flex-direction:column;align-items:flex-start;}.lb-controls{flex-direction:column;align-items:flex-start;}.lb-doa-row{grid-template-columns:1fr;}}
 
-.dashboard { display: none; }
-.dashboard.active { display: block; }
-
-/* ── TOGGLE BAR ── */
-.toggle-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 18px;
-}
-.section-title { font-size: 14px; font-weight: 700; color: var(--navy); }
-.toggle-group { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
-.toggle-btn {
-  padding: 5px 14px; border-radius: 6px; border: none; cursor: pointer;
-  font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif;
-  background: transparent; color: var(--text2); transition: all 0.15s;
-}
-.toggle-btn.active { background: var(--blue); color: white; }
-
-/* ── KPI CARDS ── */
-.kpi-row { display: grid; gap: 14px; margin-bottom: 18px; }
-.kpi-row.eight { grid-template-columns: repeat(8, 1fr); }
-.kpi-row.six { grid-template-columns: repeat(6, 1fr); }
-
-.kpi-card {
-  background: var(--surface); border-radius: var(--radius); padding: 16px 18px;
-  border: 1px solid var(--border); box-shadow: var(--shadow);
-  position: relative; overflow: hidden; transition: box-shadow 0.18s;
-}
-.kpi-card:hover { box-shadow: var(--shadow-md); }
-.kpi-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-.kpi-card.blue::before { background: var(--blue); }
-.kpi-card.teal::before { background: var(--teal); }
-.kpi-card.green::before { background: var(--green); }
-.kpi-card.amber::before { background: var(--amber); }
-.kpi-card.red::before { background: var(--red); }
-.kpi-card.purple::before { background: var(--purple); }
-.kpi-card.navy::before { background: var(--navy); }
-
-.kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-.kpi-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; font-family: 'DM Mono', monospace; }
-.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
-.kpi-badge {
-  display: inline-flex; align-items: center; gap: 3px;
-  padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
-}
-.kpi-badge.up { background: #d1fae5; color: #059669; }
-.kpi-badge.dn { background: #fee2e2; color: #dc2626; }
-
-.kpi-icon {
-  position: absolute; right: 14px; top: 14px;
-  width: 36px; height: 36px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-}
-.kpi-icon.blue { background: #eff4ff; color: var(--blue); }
-.kpi-icon.teal { background: #ecfeff; color: var(--teal); }
-.kpi-icon.green { background: #d1fae5; color: var(--green); }
-.kpi-icon.amber { background: #fef3c7; color: var(--amber); }
-.kpi-icon.red { background: #fee2e2; color: var(--red); }
-.kpi-icon.purple { background: #ede9fe; color: var(--purple); }
-.kpi-icon svg { width: 18px; height: 18px; }
-
-/* ── PIPELINE ── */
-.pipeline-card {
-  background: var(--surface); border-radius: var(--radius); padding: 18px 24px;
-  border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 18px;
-}
-.pipeline-title { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 16px; }
-.pipeline { display: flex; align-items: center; gap: 0; overflow-x: auto; }
-.pipeline-stage {
-  flex: 1; min-width: 100px; text-align: center; padding: 12px 8px;
-  background: var(--surface2); border: 1px solid var(--border);
-  position: relative; cursor: pointer; transition: all 0.18s;
-  border-radius: 0; margin-right: 0;
-}
-.pipeline-stage:first-child { border-radius: 10px 0 0 10px; }
-.pipeline-stage:last-child { border-radius: 0 10px 10px 0; }
-.pipeline-stage:hover { background: var(--blue-light); border-color: var(--blue-mid); z-index: 1; }
-.pipeline-stage.active { background: var(--blue); border-color: var(--blue); }
-.pipeline-stage.active .ps-label { color: white; }
-.pipeline-stage.active .ps-count { color: white; }
-.pipeline-stage.active .ps-pct { color: rgba(255,255,255,0.75); }
-.ps-label { font-size: 11px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.4px; }
-.ps-count { font-size: 20px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; margin: 4px 0; }
-.ps-pct { font-size: 11px; color: var(--text3); }
-.pipeline-arrow {
-  width: 0; height: 0; flex-shrink: 0;
-  border-top: 22px solid transparent; border-bottom: 22px solid transparent;
-  border-left: 14px solid var(--border); position: relative; z-index: 2;
-  margin: 0 -1px;
-}
-.pipeline-arrow::before {
-  content: ''; position: absolute; top: -22px; left: -16px;
-  border-top: 22px solid transparent; border-bottom: 22px solid transparent;
-  border-left: 14px solid var(--surface2);
-}
-
-/* ── CHARTS GRID ── */
-.charts-grid { display: grid; gap: 16px; margin-bottom: 16px; }
-.charts-grid.two { grid-template-columns: 1fr 1fr; }
-.charts-grid.three { grid-template-columns: 1fr 1fr 1fr; }
-.charts-grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
-.charts-grid.cols-3-2 { grid-template-columns: 3fr 2fr; }
-.charts-grid.cols-2-3 { grid-template-columns: 2fr 3fr; }
-
-.chart-card {
-  background: var(--surface); border-radius: var(--radius); padding: 18px 20px;
-  border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden;
-}
-.chart-header {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
-}
-.chart-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.chart-subtitle { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.chart-actions { display: flex; gap: 4px; }
-.chart-btn {
-  padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border);
-  background: var(--surface2); color: var(--text2); cursor: pointer;
-  font-size: 11px; font-family: 'DM Sans', sans-serif; transition: all 0.15s;
-}
-.chart-btn.active, .chart-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
-
-/* ── TABLE ── */
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table th {
-  background: var(--surface2); padding: 8px 12px;
-  font-size: 11px; font-weight: 600; color: var(--text2);
-  text-align: left; border-bottom: 1px solid var(--border);
-  text-transform: uppercase; letter-spacing: 0.4px;
-}
-.data-table td {
-  padding: 9px 12px; font-size: 12px; color: var(--text);
-  border-bottom: 1px solid var(--border);
-}
-.data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: var(--blue-light); }
-.badge-open { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-.badge-closed { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-.badge-pending { background: #ede9fe; color: #4c1d95; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-
-/* ── GAUGE ── */
-.gauge-wrap { display: flex; align-items: center; justify-content: center; flex-direction: column; }
-.gauge-value { font-size: 28px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; }
-.gauge-label { font-size: 11px; color: var(--text3); }
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 1400px) {
-  .kpi-row.eight { grid-template-columns: repeat(4, 1fr); }
-  .charts-grid.four { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 1100px) {
-  .charts-grid.three { grid-template-columns: 1fr 1fr; }
-  .charts-grid.cols-3-2, .charts-grid.cols-2-3 { grid-template-columns: 1fr; }
-}
-
-.no-data { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text3); font-size: 13px; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="header">
   <div class="header-left">
     <div class="logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-      </div>
-      <div>
-        <div class="logo-title">P2P Intelligence Hub</div>
-        <div class="logo-sub">Procurement Analytics</div>
-      </div>
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+      <div><div class="logo-title">P2P Intelligence Hub</div><div class="logo-sub">Procurement Analytics</div></div>
     </div>
     <div class="divider-v"></div>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchDash('pr')">Open PR – SPR</button>
       <button class="tab-btn" onclick="switchDash('po')">Closed PR–PO</button>
+      <button class="tab-btn" onclick="switchDash('lb')" style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Leaderboard</button>
     </div>
   </div>
   <div class="header-right">
     <div class="date-chip">FY 2024–25 &nbsp;|&nbsp; Apr–Mar</div>
     <button class="filter-toggle-btn" onclick="openFilter()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
-      Filters
-      <span class="filter-badge" id="filterBadge">0</span>
+      Filters <span class="filter-badge" id="filterBadge">0</span>
     </button>
   </div>
 </header>
 
-<!-- FILTER OVERLAY + PANEL -->
 <div class="filter-overlay" id="filterOverlay" onclick="closeFilter()"></div>
 <div class="filter-panel" id="filterPanel">
   <div class="filter-header">
@@ -404,1333 +320,1612 @@ body {
       <button class="btn-close" onclick="closeFilter()">×</button>
     </div>
   </div>
-  <div class="filter-body" id="filterBody">
-    <!-- filter groups injected by JS -->
-  </div>
+  <div class="filter-body" id="filterBody"></div>
   <div style="padding:12px 16px;border-top:1px solid var(--border);">
     <div class="chips-area" id="chipsArea"></div>
   </div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- ═══════════════════════════ DASHBOARD 1: OPEN PR ═══════════════════════════ -->
-  <div class="dashboard active" id="dash-pr">
+<!-- ═══ DASHBOARD 1: PR ═══ -->
+<div class="dashboard active" id="dash-pr">
+  <div class="toggle-bar">
+    <div class="section-title">Open PR – SPR Dashboard</div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="toggleMetric('count',this)">Count</button>
+      <button class="toggle-btn" onclick="toggleMetric('value',this)">Value (₹ L)</button>
+    </div>
+  </div>
 
-    <div class="toggle-bar">
-      <div class="section-title">Open PR – SPR Dashboard</div>
-      <div class="toggle-group">
-        <button class="toggle-btn active" onclick="toggleMetric('pr','count',this)">Count</button>
-        <button class="toggle-btn" onclick="toggleMetric('pr','value',this)">Value (₹ L)</button>
+  <div class="kpi-row eight">
+    <div class="kpi-card blue"><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/></svg></div><div class="kpi-label">Total PRs</div><div class="kpi-value" id="k-pr-total">—</div><div class="kpi-sub" id="k-pr-total-sub">Loading...</div></div>
+    <div class="kpi-card teal"><div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div><div class="kpi-label">Total PR Value</div><div class="kpi-value" id="k-pr-value">—</div><div class="kpi-sub">Total value of all PRs</div></div>
+    <div class="kpi-card amber"><div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div><div class="kpi-label">Open PR %</div><div class="kpi-value" id="k-pr-openpct">—</div><div class="kpi-sub" id="k-pr-openpct-sub">Open PRs</div></div>
+    <div class="kpi-card green"><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg></div><div class="kpi-label">Closed PR %</div><div class="kpi-value" id="k-pr-closedpct">—</div><div class="kpi-sub" id="k-pr-closedpct-sub">Closed PRs</div></div>
+    <div class="kpi-card purple"><div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div><div class="kpi-label">Open PR Value</div><div class="kpi-value" id="k-pr-openval">—</div><div class="kpi-sub" id="k-pr-openval-sub">of total value</div></div>
+    <div class="kpi-card red"><div class="kpi-icon red"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div><div class="kpi-label">365 Days PR</div><div class="kpi-value" id="k-pr-365">—</div><div class="kpi-sub">Critical ageing PRs</div></div>
+    <div class="kpi-card navy"><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></div><div class="kpi-label">Low Value PR Count</div><div class="kpi-value" id="k-pr-lvcount">—</div><div class="kpi-sub">0–3 Lakh PRs</div></div>
+    <div class="kpi-card teal"><div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div><div class="kpi-label">Low Value PR Value</div><div class="kpi-value" id="k-pr-lvval">—</div><div class="kpi-sub" id="k-pr-lvval-sub">0–3L value total</div></div>
+  </div>
+
+  <div class="pipeline-card">
+    <div class="pipeline-title">Process Pipeline Flow — Each PR belongs to exactly one stage</div>
+    <div class="pipeline" id="prPipeline"></div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">PR Category Distribution</div><div class="chart-subtitle">Supply / Service / Others</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" id="btn-prcat-count" onclick="setPrCatMode('count',this)">Count</button>
+          <button class="chart-btn" onclick="setPrCatMode('value',this)">Value</button>
+        </div>
+      </div>
+      <div id="prCategoryChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">PR Inflow vs PO Outflow</div><div class="chart-subtitle">Monthly trend — same dataset</div></div></div>
+      <div id="prInflowChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid three">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">Monthly split</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPrCapexMode('count',this)">Count</button>
+          <button class="chart-btn" onclick="setPrCapexMode('value',this)">Value</button>
+        </div>
+      </div>
+      <div id="prCapexChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Ageing Distribution</div><div class="chart-subtitle" id="ageing-sub">All PRs by ageing bucket</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setAgeStage('all',this)">All</button>
+          <button class="chart-btn" onclick="setAgeStage('RFQ Stage',this)">RFQ</button>
+          <button class="chart-btn" onclick="setAgeStage('Offer Received',this)">Offer</button>
+          <button class="chart-btn" onclick="setAgeStage('TR Raised',this)">TR</button>
+          <button class="chart-btn" onclick="setAgeStage('RA Completed',this)">RA</button>
+          <button class="chart-btn" onclick="setAgeStage('NFA Issued',this)">NFA</button>
+          <button class="chart-btn" onclick="setAgeStage('PO Created',this)">PO</button>
+        </div>
+      </div>
+      <div id="prAgeingChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Value Bucket Distribution</div><div class="chart-subtitle">Count vs Value gives different shapes</div></div></div>
+      <div id="prValueBucketChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid cols-2-3">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Location-wise PR</div><div class="chart-subtitle">Weighted by plant size</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPrLocMode('count',this)">Count</button>
+          <button class="chart-btn" onclick="setPrLocMode('value',this)">Value</button>
+        </div>
+      </div>
+      <div id="prLocationChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Month-wise Open vs Closed</div><div class="chart-subtitle">Grand total matches KPI</div></div></div>
+      <div style="overflow-x:auto;max-height:340px;overflow-y:auto"><table class="data-table" id="prMonthTable"></table></div>
+    </div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Material Group Distribution</div><div class="chart-subtitle">Top 8 by value</div></div></div>
+      <div id="prMaterialChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Buyer Performance</div><div class="chart-subtitle">PR count/value per buyer</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPrBuyerRank('top',this)">Top 10</button>
+          <button class="chart-btn" onclick="setPrBuyerRank('bottom',this)">Bottom 10</button>
+          <button class="chart-btn active" onclick="setPrBuyerMode('count',this)" style="margin-left:4px">Count</button>
+          <button class="chart-btn" onclick="setPrBuyerMode('value',this)">Value</button>
+        </div>
+      </div>
+      <div id="prBuyerChart"></div>
+    </div>
+  </div>
+</div><!-- end dash-pr -->
+
+<!-- ═══ DASHBOARD 2: PO ═══ -->
+<div class="dashboard" id="dash-po">
+  <div class="toggle-bar">
+    <div class="section-title">Closed PR–PO Dashboard</div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="toggleMetric('count',this)">Count</button>
+      <button class="toggle-btn" onclick="toggleMetric('value',this)">Value (₹ L)</button>
+    </div>
+  </div>
+
+  <div class="kpi-row six">
+    <div class="kpi-card blue"><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></div><div class="kpi-label">Total POs</div><div class="kpi-value" id="k-po-total">—</div><div class="kpi-sub">Closed purchase orders</div></div>
+    <div class="kpi-card teal"><div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5z"/></svg></div><div class="kpi-label">PO Items</div><div class="kpi-value" id="k-po-items">—</div><div class="kpi-sub" id="k-po-items-sub">Avg items/PO</div></div>
+    <div class="kpi-card green"><div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div><div class="kpi-label">PO Value</div><div class="kpi-value" id="k-po-value">—</div><div class="kpi-sub">Total PO spend</div></div>
+    <div class="kpi-card amber"><div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg></div><div class="kpi-label">Avg TAT (Days)</div><div class="kpi-value" id="k-po-tat">—</div><div class="kpi-sub">PR to PO calendar days</div></div>
+    <div class="kpi-card purple"><div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div><div class="kpi-label">Avg Monthly POs</div><div class="kpi-value" id="k-po-monthlypo">—</div><div class="kpi-sub">Per month average</div></div>
+    <div class="kpi-card navy"><div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div><div class="kpi-label">Avg Monthly Value</div><div class="kpi-value" id="k-po-monthlyval">—</div><div class="kpi-sub">Per month average</div></div>
+  </div>
+  <div class="kpi-row six">
+    <div class="kpi-card teal"><div class="kpi-label">Avg Value / PO</div><div class="kpi-value" id="k-po-avgval">—</div><div class="kpi-sub">Per PO avg value</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Avg Items / PO</div><div class="kpi-value" id="k-po-avgitems">—</div><div class="kpi-sub">Line items average</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Low Value PO %</div><div class="kpi-value" id="k-po-lvpct">—</div><div class="kpi-sub" id="k-po-lvpct-sub">POs below ₹3L</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Domestic POs</div><div class="kpi-value" id="k-po-dom">—</div><div class="kpi-sub" id="k-po-dom-sub">% of total</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Import POs</div><div class="kpi-value" id="k-po-imp">—</div><div class="kpi-sub" id="k-po-imp-sub">Import value</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Active Vendors</div><div class="kpi-value" id="k-po-vendors">—</div><div class="kpi-sub" id="k-po-vendors-sub">countries</div></div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">PO Category Distribution</div><div class="chart-subtitle">Supply / Service / Others</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoMode('cat',this,'count')">Count</button>
+          <button class="chart-btn" onclick="setPoMode('cat',this,'value')">Value</button>
+        </div>
+      </div>
+      <div id="poCategoryChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">TAT Breakdown by Stage</div><div class="chart-subtitle">Avg days — PR→RFQ→Offer→TR→RA→NFA→PO</div></div></div>
+      <div id="poTatChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Monthly PO Trend</div><div class="chart-subtitle">By PO date month</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoMode('monthly',this,'count')">Count</button>
+          <button class="chart-btn" onclick="setPoMode('monthly',this,'value')">Value</button>
+        </div>
+      </div>
+      <div id="poMonthlyChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Monthly TAT Trend</div><div class="chart-subtitle">Avg TAT vs 18-day target</div></div></div>
+      <div id="poTatTrendChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid three">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">Monthly stacked</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoMode('capex',this,'count')">Count</button>
+          <button class="chart-btn" onclick="setPoMode('capex',this,'value')">Value</button>
+        </div>
+      </div>
+      <div id="poCapexChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Country Exposure</div><div class="chart-subtitle">PO distribution by country</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoMode('country',this,'count')">Count</button>
+          <button class="chart-btn" onclick="setPoMode('country',this,'value')">Value</button>
+        </div>
+      </div>
+      <div id="poCountryChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Currency Exposure</div><div class="chart-subtitle">PO value by currency</div></div></div>
+      <div id="poCurrencyChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Location-wise PO</div><div class="chart-subtitle">Weighted distribution</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoMode('loc',this,'count')">Count</button>
+          <button class="chart-btn" onclick="setPoMode('loc',this,'value')">Value</button>
+        </div>
+      </div>
+      <div id="poLocationChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Value Bucket Distribution</div><div class="chart-subtitle">PO count/value by range</div></div></div>
+      <div id="poValueBucketChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Buyer Ranking</div><div class="chart-subtitle">PO count/value per buyer</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoBuyerRank('top',this)">Top 10</button>
+          <button class="chart-btn" onclick="setPoBuyerRank('bottom',this)">Bottom 10</button>
+          <button class="chart-btn active" onclick="setPoBuyerMode('count',this)" style="margin-left:4px">Count</button>
+          <button class="chart-btn" onclick="setPoBuyerMode('value',this)">Value</button>
+        </div>
+      </div>
+      <div id="poBuyerChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Vendor Ranking</div><div class="chart-subtitle">PO count/value per vendor</div></div>
+        <div class="chart-actions">
+          <button class="chart-btn active" onclick="setPoVendorRank('top',this)">Top 10</button>
+          <button class="chart-btn" onclick="setPoVendorRank('bottom',this)">Bottom 10</button>
+          <button class="chart-btn active" onclick="setPoVendorMode('count',this)" style="margin-left:4px">Count</button>
+          <button class="chart-btn" onclick="setPoVendorMode('value',this)">Value</button>
+        </div>
+      </div>
+      <div id="poVendorChart"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid two">
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Material Group – Value %</div><div class="chart-subtitle">Top 8 by value</div></div></div>
+      <div id="poMaterialChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div><div class="chart-title">Material Group Ranking</div><div class="chart-subtitle">Top 10 by value</div></div></div>
+      <div id="poMaterialRankChart"></div>
+    </div>
+  </div>
+</div><!-- end dash-po -->
+
+<!-- ═══ DASHBOARD 3: LEADERBOARD ═══ -->
+<div class="dashboard" id="dash-lb">
+
+  <!-- Executive Header -->
+  <div class="lb-header">
+    <div class="lb-header-top">
+      <div class="lb-title-wrap">
+        <div class="lb-trophy"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <div>
+          <div class="lb-heading">Leaderboard Analytics</div>
+          <div class="lb-subheading">PAN India Procurement Performance Rankings</div>
+        </div>
+      </div>
+      <div class="lb-controls">
+        <!-- Performance Toggle -->
+        <div class="lb-toggle-group" id="lb-perf-group">
+          <button class="lb-toggle-btn perf-top active" onclick="setLbPerf('top',this)">🏆 Top Performers</button>
+          <button class="lb-toggle-btn perf-bottom" onclick="setLbPerf('bottom',this)">📉 Bottom Performers</button>
+        </div>
+        <!-- Role Toggle -->
+        <div class="lb-role-group" id="lb-role-group">
+          <button class="lb-toggle-btn active" onclick="setLbRole('buyer',this)">Buyer</button>
+          <button class="lb-toggle-btn" onclick="setLbRole('lead',this)">Lead</button>
+          <button class="lb-toggle-btn" onclick="setLbRole('section_head',this)">Section Head</button>
+          <button class="lb-toggle-btn" onclick="setLbRole('hod',this)">HOD</button>
+        </div>
       </div>
     </div>
-
-    <!-- KPI ROW -->
-    <div class="kpi-row eight" id="prKpiRow">
-      <div class="kpi-card blue">
-        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg></div>
-        <div class="kpi-label">Total PRs</div>
-        <div class="kpi-value" id="kpi-total-pr">1,284</div>
-        <div class="kpi-sub"><span class="kpi-badge up">↑ 8.4%</span> vs last month</div>
-      </div>
-      <div class="kpi-card teal">
-        <div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
-        <div class="kpi-label">Total PR Value</div>
-        <div class="kpi-value" id="kpi-pr-value">₹ 842 Cr</div>
-        <div class="kpi-sub"><span class="kpi-badge up">↑ 12.1%</span> YoY</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
-        <div class="kpi-label">Open PR %</div>
-        <div class="kpi-value" id="kpi-open-pct">63.2%</div>
-        <div class="kpi-sub">812 Open PRs</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg></div>
-        <div class="kpi-label">Closed PR %</div>
-        <div class="kpi-value" id="kpi-closed-pct">36.8%</div>
-        <div class="kpi-sub">472 Closed PRs</div>
-      </div>
-      <div class="kpi-card purple">
-        <div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div>
-        <div class="kpi-label">Open PR Value</div>
-        <div class="kpi-value" id="kpi-open-val">₹ 532 Cr</div>
-        <div class="kpi-sub">63.2% of total</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-icon red"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
-        <div class="kpi-label">365 Days PR</div>
-        <div class="kpi-value" id="kpi-365">87</div>
-        <div class="kpi-sub"><span class="kpi-badge dn">↑ Critical</span></div>
-      </div>
-      <div class="kpi-card navy">
-        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg></div>
-        <div class="kpi-label">Low Value PR Count</div>
-        <div class="kpi-value" id="kpi-lv-count">326</div>
-        <div class="kpi-sub">₹ 48.2 Cr (0–3L)</div>
-      </div>
-      <div class="kpi-card teal">
-        <div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg></div>
-        <div class="kpi-label">Low Value PR Value</div>
-        <div class="kpi-value" id="kpi-lv-val">₹ 48.2 L</div>
-        <div class="kpi-sub">25.4% of PRs</div>
-      </div>
+    <div class="lb-meta-row">
+      <div class="lb-meta-item"><div class="lb-meta-dot" style="background:#f59e0b"></div><span class="lb-meta-label">🥇 Gold — Top 1</span></div>
+      <div class="lb-meta-item"><div class="lb-meta-dot" style="background:#94a3b8"></div><span class="lb-meta-label">🥈 Silver — Rank 2</span></div>
+      <div class="lb-meta-item"><div class="lb-meta-dot" style="background:#b45309"></div><span class="lb-meta-label">🥉 Bronze — Rank 3</span></div>
+      <div class="lb-meta-item"><div class="lb-meta-dot" style="background:#2563eb"></div><span class="lb-meta-label">You — Your Position</span></div>
+      <div class="lb-meta-item" style="margin-left:auto"><span class="lb-meta-label" id="lb-user-label">Logged in as: <strong style="color:white">Rahul Sharma</strong> · Buyer · Mumbai</span></div>
     </div>
+  </div>
 
-    <!-- PIPELINE -->
-    <div class="pipeline-card">
-      <div class="pipeline-title">Process Pipeline Flow</div>
-      <div class="pipeline" id="prPipeline"></div>
+  <!-- Row 1: Open PR Ranking + Open PR Value Ranking -->
+  <div class="lb-grid two">
+    <div class="lb-widget" id="lbw-openpr">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#eff4ff;color:#2563eb"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/></svg></div>
+          <div><div class="lb-widget-title">Open PRs</div><div class="lb-widget-sub">Pending purchase requisitions</div></div>
+        </div>
+      </div>
+      <div class="lb-list" id="lb-list-openpr"></div>
     </div>
-
-    <!-- CHARTS ROW 1 -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">PR Category Distribution</div><div class="chart-subtitle">Count & Value by Category</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchChart('prCategory','count',this)">Count</button>
-            <button class="chart-btn" onclick="switchChart('prCategory','value',this)">Value</button>
-          </div>
+    <div class="lb-widget" id="lbw-openprval">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#ecfeff;color:#0891b2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+          <div><div class="lb-widget-title">Open PR Value</div><div class="lb-widget-sub">Value of open PRs (₹ Cr)</div></div>
         </div>
-        <div id="prCategoryChart"></div>
       </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">PR Inflow vs PO Outflow</div><div class="chart-subtitle">Monthly trend comparison</div></div>
-        </div>
-        <div id="prInflowChart"></div>
-      </div>
+      <div class="lb-list" id="lb-list-openprval"></div>
     </div>
+  </div>
 
-    <!-- CHARTS ROW 2 -->
-    <div class="charts-grid three">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">Monthly split</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchChart('prCapex','count',this)">Count</button>
-            <button class="chart-btn" onclick="switchChart('prCapex','value',this)">Value</button>
-          </div>
+  <!-- Row 2: 365 Days Pendency + Strike Rate -->
+  <div class="lb-grid two">
+    <div class="lb-widget">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#fee2e2;color:#dc2626"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+          <div><div class="lb-widget-title">365 Days PR Pendency</div><div class="lb-widget-sub">PRs unresolved for &gt;1 year</div></div>
         </div>
-        <div id="prCapexChart"></div>
       </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Ageing Distribution</div><div class="chart-subtitle">Open PRs by bucket</div></div>
-        </div>
-        <div id="prAgeingChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Value Bucket Distribution</div><div class="chart-subtitle">PR count by value range</div></div>
-        </div>
-        <div id="prValueBucketChart"></div>
-      </div>
+      <div class="lb-list" id="lb-list-365"></div>
     </div>
-
-    <!-- CHARTS ROW 3 -->
-    <div class="charts-grid cols-2-3">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Location-wise PR</div><div class="chart-subtitle">Count & Value by plant location</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchChart('prLocation','count',this)">Count</button>
-            <button class="chart-btn" onclick="switchChart('prLocation','value',this)">Value</button>
-          </div>
-        </div>
-        <div id="prLocationChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Month-wise Open vs Closed</div><div class="chart-subtitle">Summary table</div></div>
-        </div>
-        <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
-          <table class="data-table" id="prMonthTable"></table>
+    <div class="lb-widget">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#d1fae5;color:#059669"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg></div>
+          <div><div class="lb-widget-title">PR→PO Conversion Strike Rate</div><div class="lb-widget-sub">% of PRs successfully converted to PO</div></div>
         </div>
       </div>
+      <div class="lb-list" id="lb-list-strike"></div>
     </div>
+  </div>
 
-    <!-- CHARTS ROW 4 -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Material Group Distribution</div><div class="chart-subtitle">PR Value share by material group</div></div>
+  <!-- Row 3: Avg TAT + Avg PO per Month -->
+  <div class="lb-grid two">
+    <div class="lb-widget">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#fef3c7;color:#d97706"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg></div>
+          <div><div class="lb-widget-title">Average TAT</div><div class="lb-widget-sub">Avg days from PR creation to PO</div></div>
         </div>
-        <div id="prMaterialChart"></div>
       </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Buyer Performance</div><div class="chart-subtitle">PR handled per buyer</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchBuyerView('pr','top',this)">Top 10</button>
-            <button class="chart-btn" onclick="switchBuyerView('pr','bottom',this)">Bottom 10</button>
-          </div>
-        </div>
-        <div id="prBuyerChart"></div>
-      </div>
+      <div class="lb-list" id="lb-list-tat"></div>
     </div>
-
-  </div><!-- end dash-pr -->
-
-  <!-- ═══════════════════════════ DASHBOARD 2: CLOSED PO ═══════════════════════════ -->
-  <div class="dashboard" id="dash-po">
-
-    <div class="toggle-bar">
-      <div class="section-title">Closed PR–PO Dashboard</div>
-      <div class="toggle-group">
-        <button class="toggle-btn active" onclick="toggleMetric('po','count',this)">Count</button>
-        <button class="toggle-btn" onclick="toggleMetric('po','value',this)">Value (₹ L)</button>
+    <div class="lb-widget">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#ede9fe;color:#7c3aed"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+          <div><div class="lb-widget-title">Avg PO per Month</div><div class="lb-widget-sub">Monthly PO throughput</div></div>
+        </div>
       </div>
+      <div class="lb-list" id="lb-list-pomonth"></div>
     </div>
+  </div>
 
-    <!-- KPI ROW 1 -->
-    <div class="kpi-row six">
-      <div class="kpi-card blue">
-        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
-        <div class="kpi-label">Total POs</div>
-        <div class="kpi-value" id="kpi-total-po">947</div>
-        <div class="kpi-sub"><span class="kpi-badge up">↑ 6.2%</span> vs last FY</div>
+  <!-- Row 4: Savings + DOA Compliance -->
+  <div class="lb-grid two">
+    <div class="lb-widget">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#d1fae5;color:#059669"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div>
+          <div><div class="lb-widget-title">Savings Achieved</div><div class="lb-widget-sub">Negotiated procurement savings</div></div>
+        </div>
+        <div class="lb-widget-toggle">
+          <button class="lb-widget-btn active" onclick="setLbSavingsMode('pct',this)">%</button>
+          <button class="lb-widget-btn" onclick="setLbSavingsMode('val',this)">Value</button>
+        </div>
       </div>
-      <div class="kpi-card teal">
-        <div class="kpi-icon teal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
-        <div class="kpi-label">PO Items</div>
-        <div class="kpi-value" id="kpi-po-items">3,842</div>
-        <div class="kpi-sub">Avg 4.06 items/PO</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
-        <div class="kpi-label">PO Value</div>
-        <div class="kpi-value" id="kpi-po-value">₹ 684 Cr</div>
-        <div class="kpi-sub"><span class="kpi-badge up">↑ 9.8%</span> YoY</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-icon amber"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg></div>
-        <div class="kpi-label">Avg TAT (Days)</div>
-        <div class="kpi-value" id="kpi-avg-tat">18.4</div>
-        <div class="kpi-sub"><span class="kpi-badge dn">↑ 1.2d</span> vs target 17d</div>
-      </div>
-      <div class="kpi-card purple">
-        <div class="kpi-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
-        <div class="kpi-label">Avg Monthly POs</div>
-        <div class="kpi-value" id="kpi-monthly-po">78.9</div>
-        <div class="kpi-sub">Per month avg</div>
-      </div>
-      <div class="kpi-card navy">
-        <div class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z"/></svg></div>
-        <div class="kpi-label">Avg Monthly Value</div>
-        <div class="kpi-value" id="kpi-monthly-val">₹ 57 Cr</div>
-        <div class="kpi-sub">Per month avg</div>
-      </div>
+      <div class="lb-list" id="lb-list-savings"></div>
     </div>
-
-    <!-- KPI ROW 2 -->
-    <div class="kpi-row six">
-      <div class="kpi-card teal">
-        <div class="kpi-label">Avg Value per PO</div>
-        <div class="kpi-value">₹ 72.2 L</div>
-        <div class="kpi-sub">Across all POs</div>
+    <div class="lb-widget">
+      <div class="lb-widget-header">
+        <div class="lb-widget-title-wrap">
+          <div class="lb-widget-icon" style="background:#eff4ff;color:#2563eb"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+          <div><div class="lb-widget-title">DOA Compliance</div><div class="lb-widget-sub">PO % against DOA clauses</div></div>
+        </div>
       </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Avg Items per PO</div>
-        <div class="kpi-value">4.06</div>
-        <div class="kpi-sub">Line items avg</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-label">Low Value PO %</div>
-        <div class="kpi-value">22.4%</div>
-        <div class="kpi-sub">212 POs below ₹3L</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-label">Domestic Count</div>
-        <div class="kpi-value">718</div>
-        <div class="kpi-sub">75.8% of total POs</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-label">Import Count</div>
-        <div class="kpi-value">229</div>
-        <div class="kpi-sub">₹ 284 Cr (41.5%)</div>
-      </div>
-      <div class="kpi-card purple">
-        <div class="kpi-label">Active Vendors</div>
-        <div class="kpi-value">184</div>
-        <div class="kpi-sub">12 countries</div>
-      </div>
+      <div class="lb-doa-row" id="lb-doa-content"></div>
     </div>
+  </div>
 
-    <!-- CHARTS ROW 1 -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">PO Category Distribution</div><div class="chart-subtitle">Count & Value by Category</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchChart('poCategory','count',this)">Count</button>
-            <button class="chart-btn" onclick="switchChart('poCategory','value',this)">Value</button>
-          </div>
-        </div>
-        <div id="poCategoryChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">TAT Breakdown by Stage</div><div class="chart-subtitle">Average days per process stage</div></div>
-        </div>
-        <div id="poTatChart"></div>
-      </div>
-    </div>
+</div><!-- end dash-lb -->
 
-    <!-- CHARTS ROW 2 -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Monthly PO Trend</div><div class="chart-subtitle">Count & Value over 12 months</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchChart('poMonthly','count',this)">Count</button>
-            <button class="chart-btn" onclick="switchChart('poMonthly','value',this)">Value</button>
-          </div>
-        </div>
-        <div id="poMonthlyChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Monthly TAT Trend</div><div class="chart-subtitle">Average TAT in days per month</div></div>
-        </div>
-        <div id="poTatTrendChart"></div>
-      </div>
-    </div>
-
-    <!-- CHARTS ROW 3 -->
-    <div class="charts-grid three">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">PO value split monthly</div></div>
-        </div>
-        <div id="poCapexChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Country Exposure</div><div class="chart-subtitle">PO value % by country</div></div>
-        </div>
-        <div id="poCountryChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Currency Exposure</div><div class="chart-subtitle">PO value % by currency</div></div>
-        </div>
-        <div id="poCurrencyChart"></div>
-      </div>
-    </div>
-
-    <!-- CHARTS ROW 4 -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Location-wise PO</div><div class="chart-subtitle">Distribution by plant/location</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchChart('poLocation','count',this)">Count</button>
-            <button class="chart-btn" onclick="switchChart('poLocation','value',this)">Value</button>
-          </div>
-        </div>
-        <div id="poLocationChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Value Bucket Distribution</div><div class="chart-subtitle">PO count by value range</div></div>
-        </div>
-        <div id="poValueBucketChart"></div>
-      </div>
-    </div>
-
-    <!-- CHARTS ROW 5 -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Buyer Ranking</div><div class="chart-subtitle">POs closed per buyer</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchBuyerView('po','top',this)">Top 10</button>
-            <button class="chart-btn" onclick="switchBuyerView('po','bottom',this)">Bottom 10</button>
-          </div>
-        </div>
-        <div id="poBuyerChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Vendor Ranking</div><div class="chart-subtitle">PO value by vendor</div></div>
-          <div class="chart-actions">
-            <button class="chart-btn active" onclick="switchVendorView('top',this)">Top 10</button>
-            <button class="chart-btn" onclick="switchVendorView('bottom',this)">Bottom 10</button>
-          </div>
-        </div>
-        <div id="poVendorChart"></div>
-      </div>
-    </div>
-
-    <!-- MATERIAL GROUP -->
-    <div class="charts-grid two">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Material Group – Value %</div><div class="chart-subtitle">PO value distribution by material group</div></div>
-        </div>
-        <div id="poMaterialChart"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-title">Material Group Ranking</div><div class="chart-subtitle">Top material groups by PO value</div></div>
-        </div>
-        <div id="poMaterialRankChart"></div>
-      </div>
-    </div>
-
-  </div><!-- end dash-po -->
 </div><!-- end main -->
 
-
 <script>
-// ════════════════════════════════════════════════
-//  CONSTANTS
-// ════════════════════════════════════════════════
-const months = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+// ══════════════════════════════════════════════════════
+//  SELF-CONTAINED CHART ENGINE  (pure SVG, no libraries)
+// ══════════════════════════════════════════════════════
+const C = {
+  pal:['#2563eb','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#1e3a6e','#0d9488','#b45309','#9333ea','#0f766e','#1d4ed8','#065f46','#92400e','#7f1d1d'],
+  pal2:['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#1e40af','#14b8a6','#d97706','#a855f7'],
 
-function fyDate(monthIdx, day) {
-  const calMonth = monthIdx < 9 ? monthIdx + 3 : monthIdx - 9;
-  const calYear  = monthIdx < 9 ? 2024 : 2025;
-  return new Date(calYear, calMonth, day || 1);
+  // Format number for axis labels
+  fmt(v){
+    if(v>=10000000) return (v/10000000).toFixed(1)+'Cr';
+    if(v>=100000)   return (v/100000).toFixed(1)+'L';
+    if(v>=1000)     return (v/1000).toFixed(1)+'k';
+    return v;
+  },
+
+  // Escape SVG text
+  esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); },
+
+  // Set SVG in container
+  set(id, svg){
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=svg;
+  },
+
+  // ─── BAR CHART (vertical) ──────────────────────────
+  bar(id, labels, datasets, opts={}){
+    const W=opts.w||520, H=opts.h||260;
+    const ml=opts.ml||52, mr=18, mt=20, mb=opts.mb||65;
+    const gW=W-ml-mr, gH=H-mt-mb;
+    const n=labels.length, nS=datasets.length;
+    const bW=Math.max(8, Math.min(36, gW/n/(nS+0.5)));
+    const allVals=datasets.flatMap(d=>d.data);
+    const maxV=Math.max(...allVals,1);
+    const yTicks=5;
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="max-height:${H}px">`;
+
+    // grid lines + y-axis labels
+    for(let i=0;i<=yTicks;i++){
+      const v=maxV*i/yTicks;
+      const y=mt+gH-(gH*i/yTicks);
+      svg+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e2e5ef" stroke-width="1"/>`;
+      svg+=`<text x="${ml-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#8a94a8">${C.fmt(v)}</text>`;
+    }
+
+    // bars
+    const groupW=gW/n;
+    datasets.forEach((ds,si)=>{
+      ds.data.forEach((v,i)=>{
+        const bH=gH*(v/maxV);
+        const x=ml+groupW*i+(groupW-nS*bW)/2+si*bW;
+        const y=mt+gH-bH;
+        const color=ds.color||C.pal[si%C.pal.length];
+        const tip=`${ds.label||''}: ${typeof v==='number'?v.toLocaleString():v}`;
+        svg+=`<rect x="${x}" y="${y}" width="${bW}" height="${bH}" fill="${color}" rx="3" opacity=".9"><title>${tip}</title></rect>`;
+        if(bH>18&&v>0) svg+=`<text x="${x+bW/2}" y="${y+12}" text-anchor="middle" font-size="8" fill="white" font-weight="600">${C.fmt(v)}</text>`;
+      });
+    });
+
+    // x-axis labels
+    labels.forEach((lbl,i)=>{
+      const x=ml+groupW*i+groupW/2;
+      const words=String(lbl).split(' ');
+      if(words.length<=2){
+        svg+=`<text x="${x}" y="${H-mb+16}" text-anchor="middle" font-size="10" fill="#4b5773">${C.esc(lbl)}</text>`;
+      } else {
+        svg+=`<text x="${x}" y="${H-mb+13}" text-anchor="middle" font-size="9" fill="#4b5773">${C.esc(words.slice(0,2).join(' '))}</text>`;
+        svg+=`<text x="${x}" y="${H-mb+24}" text-anchor="middle" font-size="9" fill="#4b5773">${C.esc(words.slice(2).join(' '))}</text>`;
+      }
+    });
+
+    // legend
+    if(datasets.length>1){
+      let lx=ml;
+      datasets.forEach((ds,i)=>{
+        const color=ds.color||C.pal[i];
+        svg+=`<rect x="${lx}" y="${H-14}" width="10" height="10" fill="${color}" rx="2"/>`;
+        svg+=`<text x="${lx+14}" y="${H-5}" font-size="10" fill="#4b5773">${C.esc(ds.label||'')}</text>`;
+        lx+=90;
+      });
+    }
+
+    svg+='</svg>';
+    C.set(id,svg);
+  },
+
+  // ─── HORIZONTAL BAR ────────────────────────────────
+  hbar(id, labels, values, opts={}){
+    const rowH=opts.rowH||28;
+    const n=labels.length;
+    const W=opts.w||520, H=Math.max(n*rowH+40,120);
+    const ml=opts.ml||130, mr=50, mt=10, mb=10;
+    const gW=W-ml-mr;
+    const maxV=Math.max(...values,1);
+    const colors=opts.colors||C.pal;
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="max-height:${H}px">`;
+
+    labels.forEach((lbl,i)=>{
+      const bH=rowH*0.6;
+      const y=mt+i*rowH+rowH/2;
+      const bW=gW*(values[i]/maxV);
+      const color=colors[i%colors.length];
+      // label
+      const shortLbl=String(lbl).length>18?String(lbl).slice(0,17)+'…':String(lbl);
+      svg+=`<text x="${ml-8}" y="${y+5}" text-anchor="end" font-size="10" fill="#4b5773">${C.esc(shortLbl)}</text>`;
+      // bar
+      svg+=`<rect x="${ml}" y="${y-bH/2}" width="${Math.max(bW,2)}" height="${bH}" fill="${color}" rx="3" opacity=".9"><title>${lbl}: ${values[i].toLocaleString()}</title></rect>`;
+      // value label
+      svg+=`<text x="${ml+bW+5}" y="${y+4}" font-size="10" fill="#4b5773">${C.fmt(values[i])}</text>`;
+    });
+    // x-axis line
+    svg+=`<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${H-mb}" stroke="#e2e5ef" stroke-width="1"/>`;
+    svg+='</svg>';
+    C.set(id,svg);
+  },
+
+  // ─── LINE / AREA CHART ─────────────────────────────
+  line(id, labels, datasets, opts={}){
+    const W=opts.w||520, H=opts.h||240;
+    const ml=52, mr=20, mt=20, mb=50;
+    const gW=W-ml-mr, gH=H-mt-mb;
+    const n=labels.length;
+    const allVals=datasets.flatMap(d=>d.data.filter(v=>v!=null));
+    const maxV=Math.max(...allVals,1);
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="max-height:${H}px">`;
+
+    // grid
+    for(let i=0;i<=4;i++){
+      const y=mt+gH*(1-i/4);
+      svg+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e2e5ef" stroke-width="1"/>`;
+      svg+=`<text x="${ml-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#8a94a8">${C.fmt(maxV*i/4)}</text>`;
+    }
+
+    // datasets
+    datasets.forEach((ds,di)=>{
+      const color=ds.color||C.pal[di%C.pal.length];
+      const pts=ds.data.map((v,i)=>{
+        const x=ml+gW*i/(n-1||1);
+        const y=mt+gH*(1-(v||0)/maxV);
+        return [x,y];
+      });
+
+      if(ds.area){
+        let poly=`${ml},${mt+gH} `;
+        pts.forEach(([x,y])=>poly+=`${x},${y} `);
+        poly+=`${ml+gW},${mt+gH}`;
+        svg+=`<polygon points="${poly}" fill="${color}" opacity=".12"/>`;
+      }
+
+      let path='';
+      pts.forEach(([x,y],i)=>{ path+=(i===0?'M':'L')+`${x},${y} `; });
+      const dash=ds.dash?`stroke-dasharray="${ds.dash}"`:'';
+      svg+=`<path d="${path}" fill="none" stroke="${color}" stroke-width="2" ${dash} stroke-linejoin="round"/>`;
+
+      // dots
+      pts.forEach(([x,y],i)=>{
+        if(ds.data[i]!=null)
+          svg+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${color}" stroke="white" stroke-width="1.5"><title>${labels[i]}: ${ds.data[i]}</title></circle>`;
+      });
+    });
+
+    // x-axis labels (every 2nd)
+    labels.forEach((lbl,i)=>{
+      if(i%2===0||n<=6){
+        const x=ml+gW*i/(n-1||1);
+        svg+=`<text x="${x}" y="${H-mb+16}" text-anchor="middle" font-size="10" fill="#4b5773">${C.esc(lbl)}</text>`;
+      }
+    });
+
+    // legend
+    let lx=ml;
+    datasets.forEach((ds,i)=>{
+      const color=ds.color||C.pal[i];
+      svg+=`<rect x="${lx}" y="${H-14}" width="18" height="3" fill="${color}" rx="1"/>`;
+      svg+=`<text x="${lx+22}" y="${H-8}" font-size="10" fill="#4b5773">${C.esc(ds.label||'')}</text>`;
+      lx+=100;
+    });
+
+    svg+='</svg>';
+    C.set(id,svg);
+  },
+
+  // ─── STACKED BAR ───────────────────────────────────
+  stackbar(id, labels, datasets, opts={}){
+    const W=opts.w||520, H=opts.h||240;
+    const ml=52, mr=18, mt=20, mb=55;
+    const gW=W-ml-mr, gH=H-mt-mb;
+    const n=labels.length;
+    // totals per column
+    const totals=labels.map((_,i)=>datasets.reduce((s,d)=>s+(d.data[i]||0),0));
+    const maxV=Math.max(...totals,1);
+    const bW=Math.min(40,gW/n*0.6);
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="max-height:${H}px">`;
+    for(let i=0;i<=4;i++){
+      const y=mt+gH*(1-i/4);
+      svg+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e2e5ef" stroke-width="1"/>`;
+      svg+=`<text x="${ml-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#8a94a8">${C.fmt(maxV*i/4)}</text>`;
+    }
+    const cx=labels.map((_,i)=>ml+gW*i/n+gW/n/2);
+    labels.forEach((_,i)=>{
+      let base=0;
+      datasets.forEach((ds,di)=>{
+        const v=ds.data[i]||0;
+        const bH=gH*(v/maxV);
+        const y=mt+gH-gH*(base+v)/maxV;
+        const color=ds.color||C.pal[di%C.pal.length];
+        svg+=`<rect x="${cx[i]-bW/2}" y="${y}" width="${bW}" height="${bH}" fill="${color}" opacity=".9"><title>${ds.label}: ${v.toLocaleString()}</title></rect>`;
+        base+=v;
+      });
+      const lbl=String(labels[i]);
+      svg+=`<text x="${cx[i]}" y="${H-mb+16}" text-anchor="middle" font-size="10" fill="#4b5773">${C.esc(lbl)}</text>`;
+    });
+    let lx=ml;
+    datasets.forEach((ds,i)=>{
+      const color=ds.color||C.pal[i];
+      svg+=`<rect x="${lx}" y="${H-14}" width="10" height="10" fill="${color}" rx="2"/>`;
+      svg+=`<text x="${lx+14}" y="${H-5}" font-size="10" fill="#4b5773">${C.esc(ds.label||'')}</text>`;
+      lx+=80;
+    });
+    svg+='</svg>';
+    C.set(id,svg);
+  },
+
+  // ─── DONUT / PIE ──────────────────────────────────
+  donut(id, labels, values, opts={}){
+    const W=opts.w||320, H=opts.h||260;
+    const cx=W/2, cy=(H-60)/2+10;
+    const R=Math.min(cx,cy)-10, ri=opts.pie?0:R*0.5;
+    const total=values.reduce((a,v)=>a+v,0)||1;
+    const colors=opts.colors||C.pal;
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="max-height:${H}px">`;
+
+    let angle=-Math.PI/2;
+    values.forEach((v,i)=>{
+      const sweep=2*Math.PI*v/total;
+      const a1=angle, a2=angle+sweep;
+      const x1=cx+R*Math.cos(a1), y1=cy+R*Math.sin(a1);
+      const x2=cx+R*Math.cos(a2), y2=cy+R*Math.sin(a2);
+      const xi1=cx+ri*Math.cos(a1), yi1=cy+ri*Math.sin(a1);
+      const xi2=cx+ri*Math.cos(a2), yi2=cy+ri*Math.sin(a2);
+      const large=sweep>Math.PI?1:0;
+      const color=colors[i%colors.length];
+      const pct=(v/total*100).toFixed(1);
+      let path;
+      if(ri>0){
+        path=`M${xi1},${yi1} L${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} L${xi2},${yi2} A${ri},${ri} 0 ${large},0 ${xi1},${yi1}Z`;
+      } else {
+        path=`M${cx},${cy} L${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2}Z`;
+      }
+      svg+=`<path d="${path}" fill="${color}" stroke="white" stroke-width="1.5" opacity=".92"><title>${labels[i]}: ${v.toLocaleString()} (${pct}%)</title></path>`;
+      // label if slice big enough
+      if(sweep>0.3){
+        const ma=(a1+a2)/2, lr=(R+ri)/2;
+        const lx=cx+lr*Math.cos(ma), ly=cy+lr*Math.sin(ma);
+        svg+=`<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="9" fill="white" font-weight="700">${pct}%</text>`;
+      }
+      angle=a2;
+    });
+
+    // center text for donut
+    if(ri>0){
+      svg+=`<text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="11" fill="#4b5773" font-weight="600">${opts.centerLabel||'Total'}</text>`;
+      svg+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="14" fill="#1a2236" font-weight="700">${total.toLocaleString()}</text>`;
+    }
+
+    // legend (2 columns below chart)
+    const legY=cy+R+16;
+    const perRow=Math.ceil(labels.length/2);
+    labels.forEach((lbl,i)=>{
+      const col=i<perRow?0:1;
+      const row=i<perRow?i:i-perRow;
+      const lx=col===0?8:W/2+4;
+      const ly=legY+row*16;
+      const shortLbl=String(lbl).length>16?String(lbl).slice(0,15)+'…':String(lbl);
+      svg+=`<rect x="${lx}" y="${ly}" width="9" height="9" fill="${colors[i%colors.length]}" rx="2"/>`;
+      svg+=`<text x="${lx+13}" y="${ly+9}" font-size="9.5" fill="#4b5773">${C.esc(shortLbl)}</text>`;
+    });
+
+    svg+='</svg>';
+    C.set(id,svg);
+  }
+};
+
+// ══════════════════════════════════════════════════════
+//  SEEDED PRNG
+// ══════════════════════════════════════════════════════
+let _s=20240401;
+function rng(){_s=(_s*1664525+1013904223)&0xffffffff;return((_s>>>0)/4294967296);}
+function ri(a,b){return Math.floor(rng()*(b-a+1))+a;}
+function rp(arr){return arr[ri(0,arr.length-1)];}
+function rwp(obj){
+  const keys=Object.keys(obj),tot=keys.reduce((s,k)=>s+obj[k],0);
+  let r=rng()*tot; for(const k of keys){r-=obj[k];if(r<=0)return k;} return keys[keys.length-1];
 }
-function monthLabel(d) {
-  const m = d.getMonth();
-  const idx = m >= 3 ? m - 3 : m + 9;
-  return months[idx];
+function vb(v){if(v<=3)return'0–3L';if(v<=10)return'3–10L';if(v<=25)return'10–25L';if(v<=50)return'25–50L';if(v<=100)return'50L–1Cr';return'>1Cr';}
+function ab(d){if(d<=30)return'0–30 Days';if(d<=60)return'31–60 Days';if(d<=90)return'61–90 Days';if(d<=180)return'91–180 Days';if(d<=365)return'181–365 Days';return'>365 Days';}
+
+// ══════════════════════════════════════════════════════
+//  REFERENCE DATA
+// ══════════════════════════════════════════════════════
+const MO=['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+const BUYERS=['Rahul Sharma','Priya Nair','Amit Patel','Sneha Kulkarni','Vikram Menon','Deepa Iyer','Suresh Rao','Anjali Singh','Kiran Gupta','Rohit Das','Meera Joshi','Arjun Kumar','Pooja Verma','Naveen Reddy','Divya Bhat'];
+const CREATORS=['Suresh Kumar','Anita Desai','Ramesh Iyer','Kavita Nair','Prakash Rao','Sunita Patel','Mohan Verma','Lata Sharma','Girish Menon','Rekha Bhat','Ashok Das','Nandini Gupta','Vinod Reddy','Smita Kulkarni','Harish Singh'];
+const CATS=['Supply','Service','Others'];
+const PLANTS=['Plant A','Plant B','Plant C','Plant D','Plant E'];
+const LW={'Mumbai':220,'Pune':180,'Ahmedabad':145,'Chennai':130,'Hyderabad':110,'Bengaluru':165,'Kolkata':80,'Delhi':95,'Surat':55,'Nagpur':45};
+const LOCS=Object.keys(LW);
+const VENDORS=['Larsen & Toubro','Siemens India','ABB Ltd','Honeywell Automation','BHEL','Thermax Ltd','Kirloskar Brothers','Tata Projects','Forbes Marshall','Alfa Laval','Atlas Copco','Ingersoll Rand','Parker Hannifin','Emerson Electric','Bosch Rexroth','Danfoss','Grundfos','Essar Projects','GE India','SKF India'];
+const MATS=['Electrical Items','Mechanical Spares','Civil Materials','IT Equipment','Chemicals','Instruments','Safety Gear','HVAC Parts','Structural Steel','Piping Material','Consumables','Fasteners','Valves','Pumps','Compressors'];
+const COUNTRIES=['India','Germany','USA','China','Japan','South Korea','UK','Italy','France','Singapore'];
+const CURRS=['INR','USD','EUR','JPY','GBP','SGD','CNY'];
+const DOAS=['4.3','4.5','4.10','4.12','4.15','4.20'];
+const INCOS=['CIF','FOB','EXW','DAP','DDP','CFR','FCA'];
+const VBS=['0–3L','3–10L','10–25L','25–50L','50L–1Cr','>1Cr'];
+const ABS=['0–30 Days','31–60 Days','61–90 Days','91–180 Days','181–365 Days','>365 Days'];
+const PS=['Open','Closed'];
+// Pipeline stages — each PR belongs to exactly ONE
+const STAGES=['PR Created','RFQ Stage','Offer Received','TR Raised','RA Completed','NFA Issued','PO Created'];
+const STAGE_W=[0.05,0.09,0.11,0.10,0.08,0.08,0.49];
+const FYS=['FY2023-24','FY2024-25'];
+
+function fyDate(mi,day){const cm=mi<9?mi+3:mi-9,cy=mi<9?2024:2025;return new Date(cy,cm,day||1);}
+function mLabel(d){const m=d.getMonth();return MO[m>=3?m-3:m+9];}
+function pickStage(){
+  let r=rng(),cum=0;
+  for(let i=0;i<STAGE_W.length;i++){cum+=STAGE_W[i];if(r<=cum)return STAGES[i];}
+  return STAGES[STAGES.length-1];
+}
+// Each stage has a distinct ageing range → different visual distribution
+function stageAge(s){
+  const ranges={
+    'PR Created':[5,35],'RFQ Stage':[20,80],'Offer Received':[35,120],
+    'TR Raised':[50,160],'RA Completed':[70,210],'NFA Issued':[90,260],'PO Created':[15,100]
+  };
+  const [lo,hi]=ranges[s]||[10,180];
+  return ri(lo,hi);
 }
 
-const buyers       = ['Rahul Sharma','Priya Nair','Amit Patel','Sneha Kulkarni','Vikram Menon','Deepa Iyer','Suresh Rao','Anjali Singh','Kiran Gupta','Rohit Das','Meera Joshi','Arjun Kumar','Pooja Verma','Naveen Reddy','Divya Bhat'];
-const prCreators   = ['Suresh Kumar','Anita Desai','Ramesh Iyer','Kavita Nair','Prakash Rao','Sunita Patel','Mohan Verma','Lata Sharma','Girish Menon','Rekha Bhat','Ashok Das','Nandini Gupta','Vinod Reddy','Smita Kulkarni','Harish Singh'];
-const categories   = ['Supply','Service','Others'];
-const plants       = ['Plant A','Plant B','Plant C','Plant D','Plant E'];
-const locationWeights = {'Mumbai':220,'Pune':180,'Ahmedabad':145,'Chennai':130,'Hyderabad':110,'Bengaluru':165,'Kolkata':80,'Delhi':95,'Surat':55,'Nagpur':45};
-const locations    = Object.keys(locationWeights);
-const vendors      = ['Larsen & Toubro','Siemens India','ABB Ltd','Honeywell Automation','BHEL','Thermax Ltd','Kirloskar Brothers','Tata Projects','Forbes Marshall','Alfa Laval','Atlas Copco','Ingersoll Rand','Parker Hannifin','Emerson Electric','Bosch Rexroth','Danfoss','Grundfos','Essar Projects','GE India','SKF India'];
-const materials    = ['Electrical Items','Mechanical Spares','Civil Materials','IT Equipment','Chemicals','Instruments','Safety Gear','HVAC Parts','Structural Steel','Piping Material','Consumables','Fasteners','Valves','Pumps','Compressors'];
-const countries    = ['India','Germany','USA','China','Japan','South Korea','UK','Italy','France','Singapore'];
-const currencies   = ['INR','USD','EUR','JPY','GBP','SGD','CNY'];
-const doaClauses   = ['4.3','4.5','4.10','4.12','4.15','4.20'];
-const incoterms    = ['CIF','FOB','EXW','DAP','DDP','CFR','FCA'];
-const valueBuckets = ['0–3L','3–10L','10–25L','25–50L','50L–1Cr','>1Cr'];
-const ageingBuckets= ['0–30 Days','31–60 Days','61–90 Days','91–180 Days','181–365 Days','>365 Days'];
-const prStatuses   = ['Open','Closed'];
-const intStatuses  = ['RFQ Stage','Offer Received','TR Raised','RA Completed','NFA Issued','PO Created'];
-const fyYears      = ['FY2023-24','FY2024-25'];
-
-const palette  = ['#2563eb','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#1e3a6e','#0d9488','#b45309','#9333ea','#0f766e','#1d4ed8','#065f46','#92400e','#7f1d1d'];
-const palette2 = ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#1e40af','#14b8a6','#d97706','#a855f7'];
-
-// ── Seeded PRNG ──────────────────────────────────
-let _seed = 20240401;
-function rng() { _seed = (_seed * 1664525 + 1013904223) & 0xffffffff; return ((_seed >>> 0) / 4294967296); }
-function rngInt(min, max) { return Math.floor(rng() * (max - min + 1)) + min; }
-function rngPick(arr) { return arr[rngInt(0, arr.length - 1)]; }
-function rngWeightedPick(obj) {
-  const keys = Object.keys(obj), total = keys.reduce((s,k)=>s+obj[k],0);
-  let r = rng() * total;
-  for(const k of keys){ r -= obj[k]; if(r <= 0) return k; }
-  return keys[keys.length-1];
-}
-function valueBucketFor(v) {
-  if(v<=3) return '0–3L'; if(v<=10) return '3–10L'; if(v<=25) return '10–25L';
-  if(v<=50) return '25–50L'; if(v<=100) return '50L–1Cr'; return '>1Cr';
-}
-function ageingBucketFor(days) {
-  if(days<=30) return '0–30 Days'; if(days<=60) return '31–60 Days';
-  if(days<=90) return '61–90 Days'; if(days<=180) return '91–180 Days';
-  if(days<=365) return '181–365 Days'; return '>365 Days';
-}
-
-// ════════════════════════════════════════════════
-//  DATA GENERATION
-// ════════════════════════════════════════════════
-const prMonthlyVolumes = [85,78,92,110,105,98,115,88,102,120,95,96];
-const prData = [];
-let prSeq = 10001;
-for(let mi = 0; mi < 12; mi++) {
-  const vol = prMonthlyVolumes[mi] + (mi < 4 ? rngInt(0,15) : rngInt(0,10));
-  for(let j = 0; j < vol; j++) {
-    const created = fyDate(mi, rngInt(1,28));
-    const hasRfq   = rng() < 0.88;
-    const hasOffer = hasRfq   && rng() < 0.87;
-    const hasTr    = hasOffer && rng() < 0.84;
-    const hasRa    = hasTr    && rng() < 0.88;
-    const hasNfa   = hasRa    && rng() < 0.86;
-    const hasPo    = hasNfa   && rng() < 0.82;
-    const rfqDate   = hasRfq   ? new Date(created.getTime()   + rngInt(2,12)*86400000) : null;
-    const offerDate = hasOffer  ? new Date(rfqDate.getTime()   + rngInt(3,15)*86400000) : null;
-    const trDate    = hasTr     ? new Date(offerDate.getTime() + rngInt(2,10)*86400000) : null;
-    const raDate    = hasRa     ? new Date(trDate.getTime()    + rngInt(3,14)*86400000) : null;
-    const nfaDate   = hasNfa    ? new Date(raDate.getTime()    + rngInt(2,8)*86400000)  : null;
-    const poDate    = hasPo     ? new Date(nfaDate.getTime()   + rngInt(1,6)*86400000)  : null;
-    const today     = new Date(2025,3,17);
-    const ageingDays= Math.round((today - created)/86400000);
-    let intStatus = 'PR Created';
-    if(hasRfq)   intStatus = 'RFQ Stage';
-    if(hasOffer) intStatus = 'Offer Received';
-    if(hasTr)    intStatus = 'TR Raised';
-    if(hasRa)    intStatus = 'RA Completed';
-    if(hasNfa)   intStatus = 'NFA Issued';
-    if(hasPo)    intStatus = 'PO Created';
-    const value = Math.round((rng()*195 + 2)*10)/10;
-    const cat   = rng()<0.50?'Supply':rng()<0.70?'Service':'Others';
+// ══════════════════════════════════════════════════════
+//  GENERATE PR DATA  (~1200 records)
+// ══════════════════════════════════════════════════════
+const MVols=[85,78,92,110,105,98,115,88,102,120,95,96];
+const prData=[];
+let prSeq=10001;
+for(let mi=0;mi<12;mi++){
+  const vol=MVols[mi]+ri(0,mi<4?15:10);
+  for(let j=0;j<vol;j++){
+    const created=fyDate(mi,ri(1,28));
+    const stage=pickStage();
+    const isClosed=stage==='PO Created';
+    const ageDays=stageAge(stage);
+    const val=Math.round((rng()*195+2)*10)/10;
     prData.push({
-      pr_id:'PR'+prSeq++, pr_creator:rngPick(prCreators), buyer:rngPick(buyers),
-      category:cat, plant:rngPick(plants), location:rngWeightedPick(locationWeights),
-      material:rngPick(materials), created_date:created, month:monthLabel(created),
-      status:hasPo?'Closed':'Open', intStatus, ageing:ageingBucketFor(ageingDays), ageingDays,
-      valueBucket:valueBucketFor(value), value, capex:rng()<0.42,
-      stage_dates:{rfq:rfqDate,offer:offerDate,tr:trDate,ra:raDate,nfa:nfaDate,po:poDate},
-      hasRfq, hasOffer, hasTr, hasRa, hasNfa, hasPo,
+      pr_id:'PR'+prSeq++, pr_creator:rp(CREATORS), buyer:rp(BUYERS),
+      category:rng()<.5?'Supply':rng()<.7?'Service':'Others',
+      plant:rp(PLANTS), location:rwp(LW), material:rp(MATS),
+      month:mLabel(created), created_date:created,
+      status:isClosed?'Closed':'Open',
+      currentStage:stage,
+      ageing:ab(ageDays), ageingDays:ageDays,
+      valueBucket:vb(val), value:val, capex:rng()<.42,
     });
   }
 }
 
-const poMonthlyVolumes = [62,58,74,88,80,76,90,70,82,95,72,80];
-const poData = [];
-let poSeq = 20001;
-for(let mi = 0; mi < 12; mi++) {
-  const vol = poMonthlyVolumes[mi] + rngInt(0,8);
-  for(let j = 0; j < vol; j++) {
-    const prCreated = fyDate(mi, rngInt(1,25));
-    const rfqDate   = new Date(prCreated.getTime() + rngInt(2,10)*86400000);
-    const offerDate = new Date(rfqDate.getTime()   + rngInt(3,14)*86400000);
-    const trDate    = new Date(offerDate.getTime() + rngInt(2,9)*86400000);
-    const raDate    = new Date(trDate.getTime()    + rngInt(3,12)*86400000);
-    const nfaDate   = new Date(raDate.getTime()    + rngInt(2,7)*86400000);
-    const poDate    = new Date(nfaDate.getTime()   + rngInt(1,5)*86400000);
-    const tat = Math.round((poDate - prCreated)/86400000);
-    const stageTat = {
-      'PR→RFQ':   Math.round((rfqDate-prCreated)/86400000),
-      'RFQ→Offer':Math.round((offerDate-rfqDate)/86400000),
-      'Offer→TR': Math.round((trDate-offerDate)/86400000),
-      'TR→RA':    Math.round((raDate-trDate)/86400000),
-      'RA→NFA':   Math.round((nfaDate-raDate)/86400000),
-      'NFA→PO':   Math.round((poDate-nfaDate)/86400000),
-    };
-    const isImport = rng() < 0.24;
-    const country  = isImport ? rngPick(countries.filter(c=>c!=='India')) : 'India';
-    const currency = country==='India'?'INR':country==='Germany'||country==='France'||country==='Italy'?'EUR':country==='USA'?'USD':country==='Japan'?'JPY':country==='UK'?'GBP':country==='Singapore'?'SGD':country==='China'?'CNY':'USD';
-    const value = Math.round((rng()*240+4)*10)/10;
-    const cat   = rng()<0.52?'Supply':rng()<0.72?'Service':'Others';
+// ══════════════════════════════════════════════════════
+//  GENERATE PO DATA  (~900 records)
+// ══════════════════════════════════════════════════════
+const POVols=[62,58,74,88,80,76,90,70,82,95,72,80];
+const poData=[];
+let poSeq=20001;
+for(let mi=0;mi<12;mi++){
+  const vol=POVols[mi]+ri(0,8);
+  for(let j=0;j<vol;j++){
+    const pc=fyDate(mi,ri(1,25));
+    const t1=ri(2,10),t2=ri(3,14),t3=ri(2,9),t4=ri(3,12),t5=ri(2,7),t6=ri(1,5);
+    const tat=t1+t2+t3+t4+t5+t6;
+    const isImp=rng()<.24;
+    const country=isImp?rp(COUNTRIES.filter(c=>c!=='India')):'India';
+    const curr=country==='India'?'INR':country==='Germany'||country==='France'||country==='Italy'?'EUR':country==='USA'?'USD':country==='Japan'?'JPY':country==='UK'?'GBP':country==='Singapore'?'SGD':country==='China'?'CNY':'USD';
+    const val=Math.round((rng()*240+4)*10)/10;
+    const poMonth=MO[(MO.indexOf(mLabel(pc))+(t1+t2+t3+t4+t5+t6>45?2:1))%12]||mLabel(pc);
     poData.push({
-      po_id:'PO'+poSeq++, pr_id:'PR'+rngInt(10001,10001+prData.length-1),
-      buyer:rngPick(buyers), category:cat, plant:rngPick(plants),
-      location:rngWeightedPick(locationWeights), material:rngPick(materials),
-      vendor:rngPick(vendors), country, currency, doa:rngPick(doaClauses),
-      incoterm:rngPick(incoterms), created_date:prCreated, po_date:poDate,
-      month:monthLabel(poDate), valueBucket:valueBucketFor(value),
-      value, capex:rng()<0.44, tat, stageTat, items:rngInt(1,9), isImport,
-      fyYear:'FY2024-25',
+      po_id:'PO'+poSeq++, buyer:rp(BUYERS),
+      category:rng()<.52?'Supply':rng()<.72?'Service':'Others',
+      plant:rp(PLANTS), location:rwp(LW), material:rp(MATS),
+      vendor:rp(VENDORS), country, currency:curr,
+      doa:rp(DOAS), incoterm:rp(INCOS),
+      month:poMonth, valueBucket:vb(val),
+      value:val, capex:rng()<.44, tat,
+      stageTat:{'PR→RFQ':t1,'RFQ→Offer':t2,'Offer→TR':t3,'TR→RA':t4,'RA→NFA':t5,'NFA→PO':t6},
+      items:ri(1,9), isImport:isImp, fyYear:'FY2024-25',
     });
   }
 }
 
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  GLOBAL STATE
-// ════════════════════════════════════════════════
-let currentDash  = 'pr';
-let globalMetric = 'count';
-let filterSelections = {};
-let chartInstances   = {};
-let prBuyerMode='top', prBuyerMetric='count';
-let poBuyerMode='top', poBuyerMetric='count';
-let poVendorMode='top', poVendorMetric='count';
-let prAgeingStage='all';
-let poCapexMetric='count', poCountryMetric='count';
-let poLocationMetric='count', prLocationMetric='count';
-let prCapexMetric='count', prCategoryMetric='count';
-let poCategoryMetric='count', poMonthlyMetric='count';
+// ══════════════════════════════════════════════════════
+let DASH='pr', METRIC='count';
+let filterSel={};
+let prAgeStage='all';
+let prCatMode='count', prCapexMode='count', prLocMode='count', prBuyerRank='top', prBuyerMode='count';
+let poCatMode='count', poMonthMode='count', poCapexMode='count', poLocMode='count';
+let poCountryMode='count', poBuyerRank='top', poBuyerMode='count', poVendorRank='top', poVendorMode='count';
 
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  FILTER DEFINITIONS
-// ════════════════════════════════════════════════
-const filterDefs = {
-  pr: [
-    {key:'pr_creator', label:'PR Created By',       opts:prCreators},
-    {key:'buyer',      label:'Assigned Buyer',       opts:buyers},
-    {key:'month',      label:'PR Release Month',     opts:months},
-    {key:'category',   label:'PR Category',          opts:categories},
-    {key:'status',     label:'PR Status',            opts:prStatuses},
-    {key:'intStatus',  label:'Intermediate Status',  opts:intStatuses},
-    {key:'plant',      label:'Plant Code',           opts:plants},
-    {key:'location',   label:'Location',             opts:locations},
-    {key:'ageing',     label:'Ageing Bucket',        opts:ageingBuckets},
-    {key:'material',   label:'Material Group',       opts:materials},
-    {key:'valueBucket',label:'Value Bucket',         opts:valueBuckets},
+// ══════════════════════════════════════════════════════
+const FD={
+  pr:[
+    {key:'pr_creator',label:'PR Created By',opts:CREATORS},
+    {key:'buyer',label:'Assigned Buyer',opts:BUYERS},
+    {key:'month',label:'PR Release Month',opts:MO},
+    {key:'category',label:'PR Category',opts:CATS},
+    {key:'status',label:'PR Status',opts:PS},
+    {key:'currentStage',label:'Intermediate Status',opts:STAGES},
+    {key:'plant',label:'Plant Code',opts:PLANTS},
+    {key:'location',label:'Location',opts:LOCS},
+    {key:'ageing',label:'Ageing Bucket',opts:ABS},
+    {key:'material',label:'Material Group',opts:MATS},
+    {key:'valueBucket',label:'Value Bucket',opts:VBS},
   ],
-  po: [
-    {key:'buyer',      label:'Buyer',                opts:buyers},
-    {key:'month',      label:'PO Month',             opts:months},
-    {key:'fyYear',     label:'PO Year',              opts:fyYears},
-    {key:'category',   label:'Category',             opts:categories},
-    {key:'plant',      label:'Plant',                opts:plants},
-    {key:'location',   label:'Location',             opts:locations},
-    {key:'material',   label:'Material Group',       opts:materials},
-    {key:'valueBucket',label:'Value Bucket',         opts:valueBuckets},
-    {key:'doa',        label:'DOA Clause',           opts:doaClauses},
-    {key:'incoterm',   label:'Incoterms',            opts:incoterms},
-    {key:'country',    label:'Country',              opts:countries},
-    {key:'vendor',     label:'Vendor',               opts:vendors},
+  po:[
+    {key:'buyer',label:'Buyer',opts:BUYERS},
+    {key:'month',label:'PO Month',opts:MO},
+    {key:'fyYear',label:'PO Year',opts:FYS},
+    {key:'category',label:'Category',opts:CATS},
+    {key:'plant',label:'Plant',opts:PLANTS},
+    {key:'location',label:'Location',opts:LOCS},
+    {key:'material',label:'Material Group',opts:MATS},
+    {key:'valueBucket',label:'Value Bucket',opts:VBS},
+    {key:'doa',label:'DOA Clause',opts:DOAS},
+    {key:'incoterm',label:'Incoterms',opts:INCOS},
+    {key:'country',label:'Country',opts:COUNTRIES},
+    {key:'vendor',label:'Vendor',opts:VENDORS},
   ]
 };
 
-function getActiveDefs() { return filterDefs[currentDash]; }
-function getActiveRawData() { return currentDash==='pr' ? prData : poData; }
-function getFilteredData() {
-  return getActiveRawData().filter(row => {
-    for(const def of getActiveDefs()) {
-      const sel = filterSelections[def.key];
-      if(sel && sel.size>0 && !sel.has(row[def.key])) return false;
+function getDefs(){return FD[DASH]||FD['pr'];}
+function getRaw(){return DASH==='po'?poData:prData;}
+
+// SINGLE SOURCE OF TRUTH
+function getFD(){
+  if(DASH==='lb') return [];
+  return getRaw().filter(row=>{
+    for(const d of getDefs()){
+      const s=filterSel[d.key];
+      if(s&&s.size>0&&!s.has(row[d.key]))return false;
     }
     return true;
   });
 }
 
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  FILTER PANEL
-// ════════════════════════════════════════════════
-function buildFilterPanel() {
-  const body = document.getElementById('filterBody');
-  body.innerHTML = '';
-  filterSelections = {};
-  getActiveDefs().forEach(def => {
-    filterSelections[def.key] = new Set();
-    const sk = def.key.replace(/[^a-zA-Z0-9]/g,'_');
-    const grp = document.createElement('div');
-    grp.className = 'filter-group';
-    grp.innerHTML = `
-      <div class="filter-group-header" onclick="toggleGroup(this,'${def.key}')">
+// ══════════════════════════════════════════════════════
+function buildFilter(){
+  const body=document.getElementById('filterBody');
+  body.innerHTML=''; filterSel={};
+  getDefs().forEach(def=>{
+    filterSel[def.key]=new Set();
+    const sk=def.key.replace(/[^a-z0-9]/gi,'_');
+    const g=document.createElement('div'); g.className='filter-group';
+    g.innerHTML=`
+      <div class="filter-group-header" onclick="tg(this,'${def.key}')">
         <span class="filter-group-label">${def.label}</span>
         <div class="filter-group-meta">
-          <span class="filter-count-badge" id="badge-${sk}">0</span>
+          <span class="filter-count-badge" id="b-${sk}">0</span>
           <svg class="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
         </div>
       </div>
-      <div class="filter-dropdown" id="drop-${def.key}">
-        <div class="filter-search"><input type="text" placeholder="Search…" oninput="searchFilter(this,'${def.key}')"></div>
-        <div id="opts-${def.key}">${def.opts.map(o=>`<div class="filter-option"><input type="checkbox" id="cb-${sk}-${o.replace(/[^a-zA-Z0-9]/g,'_')}" value="${o}" onchange="toggleFilter('${def.key}','${o.replace(/'/g,"\\'")}',this.checked)"><label for="cb-${sk}-${o.replace(/[^a-zA-Z0-9]/g,'_')}">${o}</label></div>`).join('')}</div>
+      <div class="filter-dropdown" id="fd-${def.key}">
+        <div class="filter-search"><input type="text" placeholder="Search…" oninput="sf(this,'${def.key}')"></div>
+        <div id="fo-${def.key}">${def.opts.map(o=>{const oi=o.replace(/[^a-z0-9]/gi,'_');return`<div class="filter-option"><input type="checkbox" id="fc-${sk}-${oi}" value="${o}" onchange="tf('${def.key}','${o.replace(/'/g,"\\'")}',this.checked)"><label for="fc-${sk}-${oi}">${o}</label></div>`;}).join('')}</div>
       </div>`;
-    body.appendChild(grp);
+    body.appendChild(g);
   });
 }
-
-function toggleGroup(hdr, key) {
-  const isOpen = hdr.classList.contains('open');
-  document.querySelectorAll('.filter-group-header.open').forEach(h=>h.classList.remove('open'));
-  document.querySelectorAll('.filter-dropdown.open').forEach(d=>d.classList.remove('open'));
-  if(!isOpen){ hdr.classList.add('open'); document.getElementById('drop-'+key).classList.add('open'); }
+function tg(h,k){
+  const was=h.classList.contains('open');
+  document.querySelectorAll('.filter-group-header.open').forEach(x=>x.classList.remove('open'));
+  document.querySelectorAll('.filter-dropdown.open').forEach(x=>x.classList.remove('open'));
+  if(!was){h.classList.add('open');document.getElementById('fd-'+k).classList.add('open');}
 }
-function searchFilter(input, key) {
-  const q = input.value.toLowerCase();
-  document.querySelectorAll(`#opts-${key} .filter-option`).forEach(opt=>{
-    opt.style.display = opt.querySelector('label').textContent.toLowerCase().includes(q)?'':'none';
+function sf(inp,k){
+  const q=inp.value.toLowerCase();
+  document.querySelectorAll(`#fo-${k} .filter-option`).forEach(o=>{
+    o.style.display=o.querySelector('label').textContent.toLowerCase().includes(q)?'':'none';
   });
 }
-function toggleFilter(key, val, checked) {
-  if(checked) filterSelections[key].add(val); else filterSelections[key].delete(val);
-  const sk=key.replace(/[^a-zA-Z0-9]/g,'_');
-  const badge=document.getElementById('badge-'+sk);
-  if(badge){const n=filterSelections[key].size;badge.textContent=n;badge.classList.toggle('show',n>0);}
-  updateGlobalBadge(); renderChips();
+function tf(k,v,chk){
+  if(chk)filterSel[k].add(v);else filterSel[k].delete(v);
+  const sk=k.replace(/[^a-z0-9]/gi,'_');
+  const b=document.getElementById('b-'+sk);
+  if(b){const n=filterSel[k].size;b.textContent=n;b.classList.toggle('show',n>0);}
+  updBadge(); renderChips();
 }
-function updateGlobalBadge() {
-  let total=0; Object.values(filterSelections).forEach(s=>total+=s.size);
-  const fb=document.getElementById('filterBadge'); fb.textContent=total; fb.classList.toggle('show',total>0);
+function updBadge(){
+  let t=0;Object.values(filterSel).forEach(s=>t+=s.size);
+  const fb=document.getElementById('filterBadge');fb.textContent=t;fb.classList.toggle('show',t>0);
 }
-function renderChips() {
-  const area=document.getElementById('chipsArea'); area.innerHTML='';
-  getActiveDefs().forEach(def=>{
-    if(!filterSelections[def.key]) return;
-    filterSelections[def.key].forEach(val=>{
-      const chip=document.createElement('div'); chip.className='chip';
-      chip.innerHTML=`<span>${val}</span><button class="chip-remove" onclick="removeChip('${def.key}','${val.replace(/'/g,"\\'")}')">×</button>`;
-      area.appendChild(chip);
+function renderChips(){
+  const a=document.getElementById('chipsArea');a.innerHTML='';
+  getDefs().forEach(d=>{
+    if(!filterSel[d.key])return;
+    filterSel[d.key].forEach(v=>{
+      const c=document.createElement('div');c.className='chip';
+      c.innerHTML=`<span>${v}</span><button class="chip-remove" onclick="rc('${d.key}','${v.replace(/'/g,"\\'")}')">×</button>`;
+      a.appendChild(c);
     });
   });
 }
-function removeChip(key, val) {
-  filterSelections[key].delete(val);
-  const sk=key.replace(/[^a-zA-Z0-9]/g,'_'), sv=val.replace(/[^a-zA-Z0-9]/g,'_');
-  const cb=document.getElementById(`cb-${sk}-${sv}`); if(cb) cb.checked=false;
-  const badge=document.getElementById('badge-'+sk);
-  if(badge){const n=filterSelections[key].size;badge.textContent=n;badge.classList.toggle('show',n>0);}
-  updateGlobalBadge(); renderChips();
+function rc(k,v){
+  filterSel[k].delete(v);
+  const sk=k.replace(/[^a-z0-9]/gi,'_'),sv=v.replace(/[^a-z0-9]/gi,'_');
+  const cb=document.getElementById(`fc-${sk}-${sv}`);if(cb)cb.checked=false;
+  const b=document.getElementById('b-'+sk);if(b){const n=filterSel[k].size;b.textContent=n;b.classList.toggle('show',n>0);}
+  updBadge();renderChips();
 }
-function clearFilters() {
-  getActiveDefs().forEach(def=>{
-    filterSelections[def.key]=new Set();
-    const sk=def.key.replace(/[^a-zA-Z0-9]/g,'_');
-    document.querySelectorAll(`#opts-${def.key} input[type=checkbox]`).forEach(cb=>cb.checked=false);
-    const badge=document.getElementById('badge-'+sk); if(badge){badge.textContent='0';badge.classList.remove('show');}
+function clearFilters(){
+  getDefs().forEach(d=>{
+    filterSel[d.key]=new Set();
+    const sk=d.key.replace(/[^a-z0-9]/gi,'_');
+    document.querySelectorAll(`#fo-${d.key} input[type=checkbox]`).forEach(c=>c.checked=false);
+    const b=document.getElementById('b-'+sk);if(b){b.textContent='0';b.classList.remove('show');}
   });
-  updateGlobalBadge(); renderChips();
+  updBadge();renderChips();
 }
-function applyFilters(){ closeFilter(); renderAllCharts(); }
-function openFilter(){ document.getElementById('filterPanel').classList.add('open'); document.getElementById('filterOverlay').classList.add('open'); }
-function closeFilter(){ document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
+function applyFilters(){closeFilter();renderAll();}
+function openFilter(){document.getElementById('filterPanel').classList.add('open');document.getElementById('filterOverlay').classList.add('open');}
+function closeFilter(){document.getElementById('filterPanel').classList.remove('open');document.getElementById('filterOverlay').classList.remove('open');}
 
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  DASHBOARD SWITCH
-// ════════════════════════════════════════════════
-function switchDash(dash) {
-  currentDash=dash; globalMetric='count';
+// ══════════════════════════════════════════════════════
+function switchDash(dash){
+  DASH=dash; METRIC='count';
   document.querySelectorAll('.dashboard').forEach(d=>d.classList.remove('active'));
   document.getElementById('dash-'+dash).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',(dash==='pr'&&i===0)||(dash==='po'&&i===1));});
-  document.querySelectorAll('.toggle-group .toggle-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
-  buildFilterPanel(); renderAllCharts();
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(dash==='pr'&&i===0)||(dash==='po'&&i===1)));
+  document.querySelectorAll('.toggle-group .toggle-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  buildFilter(); renderAll();
 }
 
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  GLOBAL METRIC TOGGLE
-// ════════════════════════════════════════════════
-function toggleMetric(dash, mode, btn) {
+// ══════════════════════════════════════════════════════
+function toggleMetric(mode,btn){
   btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); globalMetric=mode; renderAllCharts();
+  btn.classList.add('active'); METRIC=mode; renderAll();
 }
 
-// ════════════════════════════════════════════════
-//  CHART HELPERS
-// ════════════════════════════════════════════════
-function switchChart(chartId, mode, btn) {
-  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const data=getFilteredData();
-  if(chartId==='prCategory'){prCategoryMetric=mode;renderPrCategoryChart(data);}
-  if(chartId==='prCapex')   {prCapexMetric=mode;   renderPrCapexChart(data);}
-  if(chartId==='prLocation'){prLocationMetric=mode;renderPrLocationChart(data);}
-  if(chartId==='prAgeing')  {renderPrAgeingChart(data);}
-  if(chartId==='poCategory'){poCategoryMetric=mode;renderPoCategoryChart(data);}
-  if(chartId==='poMonthly') {poMonthlyMetric=mode; renderPoMonthlyChart(data);}
-  if(chartId==='poLocation'){poLocationMetric=mode;renderPoLocationChart(data);}
-  if(chartId==='poCapex')   {poCapexMetric=mode;   renderPoCapexChart(data);}
-  if(chartId==='poCountry') {poCountryMetric=mode; renderPoCountryChart(data);}
+// ══════════════════════════════════════════════════════
+//  PER-CHART TOGGLE HELPERS
+// ══════════════════════════════════════════════════════
+function setBtnActive(btn){btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function setPrCatMode(m,b){setBtnActive(b);prCatMode=m;renderAll();}
+function setPrCapexMode(m,b){setBtnActive(b);prCapexMode=m;renderAll();}
+function setPrLocMode(m,b){setBtnActive(b);prLocMode=m;renderAll();}
+function setPrBuyerRank(m,b){setBtnActive(b);prBuyerRank=m;renderAll();}
+function setPrBuyerMode(m,b){setBtnActive(b);prBuyerMode=m;renderAll();}
+function setAgeStage(s,b){setBtnActive(b);prAgeStage=s;renderAll();}
+function setPoMode(k,b,m){setBtnActive(b);if(k==='cat')poCatMode=m;else if(k==='monthly')poMonthMode=m;else if(k==='capex')poCapexMode=m;else if(k==='loc')poLocMode=m;else if(k==='country')poCountryMode=m;renderAll();}
+function setPoBuyerRank(m,b){setBtnActive(b);poBuyerRank=m;renderAll();}
+function setPoBuyerMode(m,b){setBtnActive(b);poBuyerMode=m;renderAll();}
+function setPoVendorRank(m,b){setBtnActive(b);poVendorRank=m;renderAll();}
+function setPoVendorMode(m,b){setBtnActive(b);poVendorMode=m;renderAll();}
+
+// ══════════════════════════════════════════════════════
+//  AGGREGATE HELPER
+// ══════════════════════════════════════════════════════
+function agg(data,key){
+  const m={};
+  data.forEach(r=>{const k=r[key]||'?';if(!m[k])m[k]={n:0,v:0};m[k].n++;m[k].v+=r.value||0;});
+  return m;
 }
-function switchBuyerView(dash, mode, btn) {
-  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if(dash==='pr'){prBuyerMode=mode;renderPrBuyerChart(getFilteredData());}
-  else{poBuyerMode=mode;renderPoBuyerChart(getFilteredData());}
-}
-function switchBuyerMetric(dash, mode, btn) {
-  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if(dash==='pr'){prBuyerMetric=mode;renderPrBuyerChart(getFilteredData());}
-  else{poBuyerMetric=mode;renderPoBuyerChart(getFilteredData());}
-}
-function switchVendorView(mode, btn) {
-  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); poVendorMode=mode; renderPoVendorChart(getFilteredData());
-}
-function switchVendorMetric(mode, btn) {
-  btn.closest('.chart-actions').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); poVendorMetric=mode; renderPoVendorChart(getFilteredData());
-}
-function setAgeingStage(stage, el) {
-  prAgeingStage=stage;
-  el.closest('.chart-header').querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active'); renderPrAgeingChart(getFilteredData());
-}
-function destroyChart(id){ if(chartInstances[id]){try{chartInstances[id].destroy();}catch(e){}chartInstances[id]=null;} }
-function renderApex(id, opts){
-  destroyChart(id); const el=document.getElementById(id); if(!el) return;
-  chartInstances[id]=new ApexCharts(el,opts); chartInstances[id].render();
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function fmtCr(v){return'₹ '+(Math.round(v/100)/10).toFixed(1)+' Cr';}
+
+// ══════════════════════════════════════════════════════
+//  RENDER DISPATCHER
+// ══════════════════════════════════════════════════════
+function renderAll(){if(DASH==='pr')renderPR();else if(DASH==='po')renderPO();}
+
+// ══════════════════════════════════════════════════════
+//  ██  PR DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderPR(){
+  const data=getFD(); // SINGLE SOURCE
+  prKpis(data); prPipeline(data); prCategory(data); prInflow(data);
+  prCapex(data); prAgeing(data); prValueBucket(data); prLocation(data);
+  prMonthTable(data); prMaterial(data); prBuyer(data);
 }
 
-// ════════════════════════════════════════════════
-//  AGGREGATE HELPERS
-// ════════════════════════════════════════════════
-function aggBy(data, key) {
-  const map={};
-  data.forEach(r=>{ const k=r[key]||'Unknown'; if(!map[k]) map[k]={count:0,value:0}; map[k].count++; map[k].value+=r.value||0; });
-  return map;
-}
+function prKpis(data){
+  const N=data.length, tv=data.reduce((a,r)=>a+r.value,0);
+  const openN=data.filter(r=>r.status==='Open').length;
+  const closedN=N-openN;
+  const openV=data.filter(r=>r.status==='Open').reduce((a,r)=>a+r.value,0);
+  const pr365=data.filter(r=>r.ageingDays>=365).length;
+  const lvN=data.filter(r=>r.valueBucket==='0–3L').length;
+  const lvV=data.filter(r=>r.valueBucket==='0–3L').reduce((a,r)=>a+r.value,0);
+  const op=N>0?(openN/N*100).toFixed(1):0, cp=N>0?(closedN/N*100).toFixed(1):0;
 
-// ════════════════════════════════════════════════
-//  RENDER ALL
-// ════════════════════════════════════════════════
-function renderAllCharts() {
-  if(currentDash==='pr') renderPrCharts(); else renderPoCharts();
-}
-
-// ════════════════════════════════════════════════
-//  PR DASHBOARD
-// ════════════════════════════════════════════════
-function renderPrCharts() {
-  const data=getFilteredData();
-  updatePrKpis(data); renderPrPipeline(data); renderPrCategoryChart(data);
-  renderPrInflowChart(data); renderPrCapexChart(data); renderPrAgeingChart(data);
-  renderPrValueBucketChart(data); renderPrLocationChart(data);
-  renderPrMonthTable(data); renderPrMaterialChart(data); renderPrBuyerChart(data);
-}
-
-function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
-
-function updatePrKpis(data) {
-  const total  = data.length;
-  const totVal = data.reduce((a,r)=>a+r.value,0);
-  const openPRs  = data.filter(r=>r.status==='Open');
-  const closedPRs= data.filter(r=>r.status==='Closed');
-  const openVal  = openPRs.reduce((a,r)=>a+r.value,0);
-  const pr365    = data.filter(r=>r.ageingDays>=365).length;
-  const lvPRs    = data.filter(r=>r.valueBucket==='0–3L');
-  const lvVal    = lvPRs.reduce((a,r)=>a+r.value,0);
-  const openPct  = total>0?(openPRs.length/total*100).toFixed(1):'0.0';
-  const clsPct   = total>0?(closedPRs.length/total*100).toFixed(1):'0.0';
-
-  if(globalMetric==='count') {
-    setText('kpi-total-pr', total.toLocaleString());
-    setText('kpi-pr-value', '₹ '+Math.round(totVal/100)/10+' Cr');
-    setText('kpi-open-pct', openPct+'%');
-    setText('kpi-closed-pct', clsPct+'%');
-    setText('kpi-open-val', '₹ '+Math.round(openVal/100)/10+' Cr');
-    setText('kpi-365', pr365.toLocaleString());
-    setText('kpi-lv-count', lvPRs.length.toLocaleString());
-    setText('kpi-lv-val', '₹ '+Math.round(lvVal)+' L');
+  if(METRIC==='count'){
+    setText('k-pr-total',N.toLocaleString());
+    setText('k-pr-value',fmtCr(tv));
+    setText('k-pr-openpct',op+'%');
+    setText('k-pr-closedpct',cp+'%');
+    setText('k-pr-openval',fmtCr(openV));
+    setText('k-pr-365',pr365.toLocaleString());
+    setText('k-pr-lvcount',lvN.toLocaleString());
+    setText('k-pr-lvval','₹ '+Math.round(lvV)+' L');
   } else {
-    setText('kpi-total-pr', '₹ '+Math.round(totVal)+' L');
-    setText('kpi-pr-value', '₹ '+Math.round(totVal/100)/10+' Cr');
-    setText('kpi-open-pct', '₹ '+Math.round(openVal)+' L');
-    setText('kpi-closed-pct', '₹ '+Math.round(totVal-openVal)+' L');
-    setText('kpi-open-val', '₹ '+Math.round(openVal/100)/10+' Cr');
-    setText('kpi-365', pr365.toLocaleString());
-    setText('kpi-lv-count', lvPRs.length.toLocaleString());
-    setText('kpi-lv-val', '₹ '+Math.round(lvVal)+' L');
+    setText('k-pr-total','₹ '+Math.round(tv)+' L');
+    setText('k-pr-value',fmtCr(tv));
+    setText('k-pr-openpct','₹ '+Math.round(openV)+' L');
+    setText('k-pr-closedpct','₹ '+Math.round(tv-openV)+' L');
+    setText('k-pr-openval',fmtCr(openV));
+    setText('k-pr-365',pr365.toLocaleString());
+    setText('k-pr-lvcount',lvN.toLocaleString());
+    setText('k-pr-lvval','₹ '+Math.round(lvV)+' L');
   }
+  setText('k-pr-total-sub','Total PRs in dataset');
+  setText('k-pr-openpct-sub',openN+' Open PRs');
+  setText('k-pr-closedpct-sub',closedN+' Closed PRs');
+  setText('k-pr-openval-sub',op+'% of total value');
+  setText('k-pr-lvval-sub',(N>0?(lvN/N*100).toFixed(1):0)+'% of PRs');
 }
 
-function renderPrPipeline(data) {
-  const stages=[
-    {label:'PR',    count:data.length},
-    {label:'RFQ',   count:data.filter(r=>r.hasRfq).length},
-    {label:'Offer', count:data.filter(r=>r.hasOffer).length},
-    {label:'TR',    count:data.filter(r=>r.hasTr).length},
-    {label:'RA',    count:data.filter(r=>r.hasRa).length},
-    {label:'NFA',   count:data.filter(r=>r.hasNfa).length},
-    {label:'PO',    count:data.filter(r=>r.hasPo).length},
-  ];
-  const el=document.getElementById('prPipeline'); if(!el) return; el.innerHTML='';
-  stages.forEach((s,i)=>{
+// Pipeline: each PR at ONE stage → sum = data.length
+function prPipeline(data){
+  const el=document.getElementById('prPipeline');if(!el)return;el.innerHTML='';
+  const short=['PR','RFQ','Offer','TR','RA','NFA','PO'];
+  const counts=STAGES.map(s=>data.filter(r=>r.currentStage===s).length);
+  const total=counts.reduce((a,v)=>a+v,0); // equals data.length
+  counts.forEach((cnt,i)=>{
     if(i>0){const a=document.createElement('div');a.className='pipeline-arrow';el.appendChild(a);}
-    const stage=document.createElement('div');
-    stage.className='pipeline-stage'+(i===0?' active':'');
-    const pct=data.length>0?Math.round(s.count/data.length*100):0;
-    stage.innerHTML=`<div class="ps-label">${s.label}</div><div class="ps-count">${s.count.toLocaleString()}</div><div class="ps-pct">${pct}%</div>`;
-    stage.onclick=function(){document.querySelectorAll('#prPipeline .pipeline-stage').forEach(x=>x.classList.remove('active'));this.classList.add('active');};
-    el.appendChild(stage);
+    const s=document.createElement('div');
+    s.className='pipeline-stage'+(i===0?' active':'');
+    const pct=total>0?Math.round(cnt/total*100):0;
+    s.innerHTML=`<div class="ps-label">${short[i]}</div><div class="ps-count">${cnt}</div><div class="ps-pct">${pct}%</div>`;
+    s.onclick=function(){document.querySelectorAll('#prPipeline .pipeline-stage').forEach(x=>x.classList.remove('active'));this.classList.add('active');};
+    el.appendChild(s);
   });
 }
 
-function renderPrCategoryChart(data) {
-  const mode=globalMetric==='value'?'value':prCategoryMetric;
-  const agg=aggBy(data,'category');
-  const cats=['Supply','Service','Others'];
-  const vals=cats.map(c=>mode==='count'?(agg[c]?.count||0):Math.round(agg[c]?.value||0));
-  renderApex('prCategoryChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'Count':'Value (L)',data:vals}],
-    xaxis:{categories:cats,labels:{style:{fontSize:'11px'}}},
-    colors:[palette[0]],dataLabels:{enabled:true,style:{fontSize:'11px'}},
-    plotOptions:{bar:{borderRadius:5,columnWidth:'45%'}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
-  });
+// Category: sum Supply+Service+Others = data.length (count) or total value
+function prCategory(data){
+  const m=METRIC==='value'?'value':prCatMode;
+  const ag=agg(data,'category');
+  const vals=CATS.map(c=>m==='count'?Math.round(ag[c]?.n||0):Math.round(ag[c]?.v||0));
+  C.bar('prCategoryChart',CATS,[{data:vals,color:C.pal[0],label:m==='count'?'PRs':'₹ L'}]);
 }
 
-function renderPrInflowChart(data) {
-  const inflow =months.map(m=>data.filter(r=>r.month===m).length);
-  const outflow=months.map(m=>data.filter(r=>r.hasPo&&r.stage_dates.po&&monthLabel(r.stage_dates.po)===m).length);
-  renderApex('prInflowChart',{
-    chart:{type:'line',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'PR Inflow',type:'area',data:inflow},{name:'PO Outflow',type:'line',data:outflow}],
-    stroke:{width:[2,2],curve:'smooth',dashArray:[0,4]},
-    fill:{type:['gradient','solid'],gradient:{opacityFrom:0.35,opacityTo:0.05}},
-    colors:[palette[0],palette[2]],
-    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}}},
-    tooltip:{shared:true,y:{formatter:v=>v+' PRs'}},
-    legend:{position:'top',fontSize:'11px'},markers:{size:[0,4]},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
-  });
+// Inflow = PRs by month; Outflow = PO-stage PRs by month → both from same dataset
+function prInflow(data){
+  const inf=MO.map(m=>data.filter(r=>r.month===m).length);
+  const out=MO.map(m=>data.filter(r=>r.currentStage==='PO Created'&&r.month===m).length);
+  C.line('prInflowChart',MO,[
+    {data:inf,color:C.pal[0],label:'PR Inflow',area:true},
+    {data:out,color:C.pal[2],label:'PO Outflow',dash:'5,4'}
+  ]);
 }
 
-function renderPrCapexChart(data) {
-  const mode=globalMetric==='value'?'value':prCapexMetric;
-  const capex=months.map(m=>{const d=data.filter(r=>r.month===m&&r.capex); return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
-  const opex =months.map(m=>{const d=data.filter(r=>r.month===m&&!r.capex);return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
-  renderApex('prCapexChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],
-    colors:[palette[0],palette[2]],
-    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:3,columnWidth:'55%'}},dataLabels:{enabled:false},
-    legend:{position:'top',fontSize:'11px'},grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v}}
-  });
+// Capex vs Opex: per month, capex+opex = total PRs in month
+function prCapex(data){
+  const m=METRIC==='value'?'value':prCapexMode;
+  const cx=MO.map(mo=>{const d=data.filter(r=>r.month===mo&&r.capex);return m==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  const ox=MO.map(mo=>{const d=data.filter(r=>r.month===mo&&!r.capex);return m==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  C.stackbar('prCapexChart',MO,[
+    {data:cx,color:C.pal[0],label:'Capex'},
+    {data:ox,color:C.pal[2],label:'Opex'}
+  ]);
 }
 
-function renderPrAgeingChart(data) {
-  let subset=data;
-  if(prAgeingStage==='rfq')   subset=data.filter(r=>r.hasRfq);
-  else if(prAgeingStage==='offer') subset=data.filter(r=>r.hasOffer);
-  else if(prAgeingStage==='tr')    subset=data.filter(r=>r.hasTr);
-  else if(prAgeingStage==='ra')    subset=data.filter(r=>r.hasRa);
-  else if(prAgeingStage==='nfa')   subset=data.filter(r=>r.hasNfa);
-  else if(prAgeingStage==='po')    subset=data.filter(r=>r.hasPo);
-  const mode=globalMetric;
-  const agg=aggBy(subset,'ageing');
-  const vals=ageingBuckets.map(b=>mode==='count'?(agg[b]?.count||0):Math.round(agg[b]?.value||0));
-  renderApex('prAgeingChart',{
-    chart:{type:'bar',height:240,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'PRs':'Value (L)',data:vals}],
-    colors:[palette[2],palette[3],palette[0],palette[6],palette[4],palette[4]],
-    xaxis:{categories:ageingBuckets,labels:{style:{fontSize:'9px'},rotate:-20}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,distributed:true,columnWidth:'60%'}},
-    dataLabels:{enabled:false},legend:{show:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
-  });
+// Ageing: distinct distribution per stage (each stage has different age range)
+function prAgeing(data){
+  let sub=data;
+  if(prAgeStage!=='all') sub=data.filter(r=>r.currentStage===prAgeStage);
+  const m=METRIC==='value'?'value':'count';
+  const ag=agg(sub,'ageing');
+  const vals=ABS.map(b=>m==='count'?Math.round(ag[b]?.n||0):Math.round(ag[b]?.v||0));
+  const sub2=prAgeStage==='all'?'All stages (n='+sub.length+')':prAgeStage+' (n='+sub.length+')';
+  const el=document.getElementById('ageing-sub');if(el)el.textContent=sub2;
+  C.hbar('prAgeingChart',ABS,vals,{colors:C.pal,ml:100});
 }
 
-function renderPrValueBucketChart(data) {
-  const mode=globalMetric;
-  const agg=aggBy(data,'valueBucket');
-  const vals=valueBuckets.map(b=>mode==='count'?(agg[b]?.count||0):Math.round(agg[b]?.value||0));
-  renderApex('prValueBucketChart',{
-    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:vals,labels:valueBuckets,colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},dataLabels:{style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:v=>mode==='count'?v+' PRs':'₹'+v+' L'}},
-    plotOptions:{pie:{donut:{size:'55%',labels:{show:true,total:{show:true,label:'Total',fontSize:'12px',formatter:()=>data.length}}}}}
-  });
+// Value Bucket: COUNT = # PRs per bucket (flat); VALUE = ₹ sum (skewed to large)
+function prValueBucket(data){
+  const m=METRIC==='value'?'value':'count';
+  const ag=agg(data,'valueBucket');
+  const vals=VBS.map(b=>m==='count'?Math.round(ag[b]?.n||0):Math.round(ag[b]?.v||0));
+  C.donut('prValueBucketChart',VBS,vals,{centerLabel:m==='count'?'PRs':'₹L'});
 }
 
-function renderPrLocationChart(data) {
-  const mode=globalMetric==='value'?'value':prLocationMetric;
-  const agg=aggBy(data,'location');
-  const locs=Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
-  const vals=locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
-  renderApex('prLocationChart',{
-    chart:{type:'bar',height:300,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'PRs':'Value (L)',data:vals}],colors:[palette[1]],
-    xaxis:{categories:locs,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
-  });
+function prLocation(data){
+  const m=METRIC==='value'?'value':prLocMode;
+  const ag=agg(data,'location');
+  const locs=Object.keys(ag).sort((a,b)=>ag[b].n-ag[a].n);
+  const vals=locs.map(l=>m==='count'?ag[l].n:Math.round(ag[l].v));
+  C.hbar('prLocationChart',locs,vals,{colors:[C.pal[1]]});
 }
 
-function renderPrMonthTable(data) {
-  const el=document.getElementById('prMonthTable'); if(!el) return;
-  const rows=months.map(m=>{
+// Month table: grand total row = KPI total
+function prMonthTable(data){
+  const el=document.getElementById('prMonthTable');if(!el)return;
+  let gt=0,gv=0,go=0,gc=0;
+  const rows=MO.map(m=>{
     const ms=data.filter(r=>r.month===m);
-    const open=ms.filter(r=>r.status==='Open').length;
-    const closed=ms.filter(r=>r.status==='Closed').length;
-    return {m,total:ms.length,open,closed,val:Math.round(ms.reduce((a,r)=>a+r.value,0))};
+    const o=ms.filter(r=>r.status==='Open').length;
+    const c=ms.length-o;
+    const v=Math.round(ms.reduce((a,r)=>a+r.value,0));
+    gt+=ms.length;gv+=v;go+=o;gc+=c;
+    return{m,n:ms.length,o,c,v};
   });
-  el.innerHTML=`<thead><tr><th>Month</th><th>Total</th><th>Open</th><th>Closed</th><th>Value (₹ L)</th><th>Open %</th></tr></thead>
-  <tbody>${rows.map(r=>`<tr><td><strong>${r.m}</strong></td><td><strong>${r.total}</strong></td>
-  <td><span class="badge-open">${r.open}</span></td><td><span class="badge-closed">${r.closed}</span></td>
-  <td>₹ ${r.val.toLocaleString()}</td>
-  <td style="min-width:70px"><div style="background:#e2e5ef;border-radius:4px;height:6px"><div style="background:var(--blue);width:${r.total>0?Math.round(r.open/r.total*100):0}%;height:6px;border-radius:4px"></div></div><span style="font-size:9px;color:var(--text3)">${r.total>0?Math.round(r.open/r.total*100):0}%</span></td></tr>`).join('')}</tbody>`;
+  el.innerHTML=`<thead><tr><th>Month</th><th>Total</th><th>Open</th><th>Closed</th><th>Value (₹L)</th><th>Open%</th></tr></thead>
+  <tbody>${rows.map(r=>`<tr><td><b>${r.m}</b></td><td><b>${r.n}</b></td>
+  <td><span class="badge-open">${r.o}</span></td><td><span class="badge-closed">${r.c}</span></td>
+  <td>₹${r.v.toLocaleString()}</td>
+  <td><div style="background:#e2e5ef;border-radius:3px;height:5px;margin-bottom:2px"><div style="background:var(--blue);width:${r.n>0?Math.round(r.o/r.n*100):0}%;height:5px;border-radius:3px"></div></div>
+  <span style="font-size:9px;color:#8a94a8">${r.n>0?Math.round(r.o/r.n*100):0}%</span></td></tr>`).join('')}
+  <tr style="background:var(--surface2);font-weight:700"><td><b>TOTAL</b></td><td><b>${gt}</b></td>
+  <td><span class="badge-open">${go}</span></td><td><span class="badge-closed">${gc}</span></td>
+  <td>₹${gv.toLocaleString()}</td><td style="font-size:9px;color:#8a94a8">${gt>0?Math.round(go/gt*100):0}%</td></tr>
+  </tbody>`;
 }
 
-function renderPrMaterialChart(data) {
-  const mode=globalMetric;
-  const agg=aggBy(data,'material');
-  const mats=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
-  const vals=mats.map(m=>mode==='count'?agg[m].count:Math.round(agg[m].value));
-  renderApex('prMaterialChart',{
-    chart:{type:'pie',height:280,fontFamily:'DM Sans'},
-    series:vals,labels:mats,colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{formatter:v=>Math.round(v)+'%',style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:v=>mode==='count'?v+' PRs':'₹'+v+' L'}}
-  });
+function prMaterial(data){
+  const m=METRIC==='value'?'value':'count';
+  const ag=agg(data,'material');
+  const mats=Object.keys(ag).sort((a,b)=>ag[b].v-ag[a].v).slice(0,8);
+  const vals=mats.map(x=>m==='count'?ag[x].n:Math.round(ag[x].v));
+  C.donut('prMaterialChart',mats,vals,{pie:true,colors:C.pal});
 }
 
-function renderPrBuyerChart(data) {
-  const mode=globalMetric==='value'?'value':prBuyerMetric;
-  const agg=aggBy(data,'buyer');
-  let sorted=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
-  if(prBuyerMode==='bottom') sorted=sorted.reverse();
+function prBuyer(data){
+  const m=METRIC==='value'?'value':prBuyerMode;
+  const ag=agg(data,'buyer');
+  let sorted=Object.keys(ag).sort((a,b)=>m==='count'?(ag[b].n-ag[a].n):(ag[b].v-ag[a].v));
+  if(prBuyerRank==='bottom')sorted=sorted.reverse();
   const top=sorted.slice(0,10);
-  renderApex('prBuyerChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'PRs':'Value (L)',data:top.map(b=>mode==='count'?agg[b].count:Math.round(agg[b].value))}],
-    colors:[prBuyerMode==='top'?palette[0]:palette[4]],
-    xaxis:{categories:top.map(b=>b.split(' ')[0]),labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' PRs'}}
-  });
+  const vals=top.map(b=>m==='count'?ag[b].n:Math.round(ag[b].v));
+  C.bar('prBuyerChart',top.map(b=>b.split(' ')[0]),[{data:vals,color:prBuyerRank==='top'?C.pal[0]:C.pal[4],label:m==='count'?'PRs':'₹L'}]);
 }
 
-// ════════════════════════════════════════════════
-//  PO DASHBOARD
-// ════════════════════════════════════════════════
-function renderPoCharts() {
-  const data=getFilteredData();
-  updatePoKpis(data); renderPoCategoryChart(data); renderPoTatChart(data);
-  renderPoMonthlyChart(data); renderPoTatTrendChart(data); renderPoCapexChart(data);
-  renderPoCountryChart(data); renderPoCurrencyChart(data); renderPoLocationChart(data);
-  renderPoValueBucketChart(data); renderPoBuyerChart(data); renderPoVendorChart(data);
-  renderPoMaterialChart(data); renderPoMaterialRankChart(data);
+// ══════════════════════════════════════════════════════
+//  ██  PO DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderPO(){
+  const data=getFD(); // SINGLE SOURCE
+  poKpis(data); poCategory(data); poTat(data); poMonthly(data);
+  poTatTrend(data); poCapex(data); poCountry(data); poCurrency(data);
+  poLocation(data); poValueBucket(data); poBuyer(data); poVendor(data);
+  poMaterial(data); poMaterialRank(data);
 }
 
-function updatePoKpis(data) {
-  const total   =data.length;
-  const totVal  =data.reduce((a,r)=>a+r.value,0);
-  const totItems=data.reduce((a,r)=>a+(r.items||1),0);
-  const avgTAT  =total>0?(data.reduce((a,r)=>a+r.tat,0)/total).toFixed(1):0;
-  const nonZeroM=months.filter(m=>data.some(r=>r.month===m)).length||1;
-  const avgMonthlyPO =(total/nonZeroM).toFixed(1);
-  const avgMonthlyVal=Math.round(totVal/nonZeroM);
-  const avgValPO =total>0?Math.round(totVal/total):0;
-  const avgItemsPO=total>0?(totItems/total).toFixed(2):0;
-  const lvPOs   =data.filter(r=>r.valueBucket==='0–3L');
-  const lvPct   =total>0?(lvPOs.length/total*100).toFixed(1):0;
-  const importPOs=data.filter(r=>r.isImport);
-  const domPOs  =data.filter(r=>!r.isImport);
-  const importVal=importPOs.reduce((a,r)=>a+r.value,0);
-  const uVendors=new Set(data.map(r=>r.vendor)).size;
-  const uCountries=new Set(data.map(r=>r.country)).size;
+function poKpis(data){
+  const N=data.length,tv=data.reduce((a,r)=>a+r.value,0);
+  const ti=data.reduce((a,r)=>a+(r.items||1),0);
+  const avgTat=N>0?(data.reduce((a,r)=>a+r.tat,0)/N).toFixed(1):0;
+  const nonZero=MO.filter(m=>data.some(r=>r.month===m)).length||1;
+  const avgMPO=(N/nonZero).toFixed(1), avgMV=Math.round(tv/nonZero);
+  const avgVPO=N>0?Math.round(tv/N):0, avgI=N>0?(ti/N).toFixed(2):0;
+  const lvN=data.filter(r=>r.valueBucket==='0–3L').length;
+  const lvPct=N>0?(lvN/N*100).toFixed(1):0;
+  const impN=data.filter(r=>r.isImport).length, domN=N-impN;
+  const impV=data.filter(r=>r.isImport).reduce((a,r)=>a+r.value,0);
+  const uV=new Set(data.map(r=>r.vendor)).size, uC=new Set(data.map(r=>r.country)).size;
 
-  if(globalMetric==='count'){
-    setText('kpi-total-po',total.toLocaleString());
-    setText('kpi-po-items',totItems.toLocaleString());
-    setText('kpi-po-value','₹ '+Math.round(totVal/100)/10+' Cr');
-    setText('kpi-avg-tat',avgTAT);
-    setText('kpi-monthly-po',avgMonthlyPO);
-    setText('kpi-monthly-val','₹ '+Math.round(avgMonthlyVal/100)/10+' Cr');
+  if(METRIC==='count'){
+    setText('k-po-total',N.toLocaleString());
+    setText('k-po-items',ti.toLocaleString());
+    setText('k-po-value',fmtCr(tv));
+    setText('k-po-tat',avgTat+' d');
+    setText('k-po-monthlypo',avgMPO);
+    setText('k-po-monthlyval',fmtCr(avgMV));
   } else {
-    setText('kpi-total-po','₹ '+Math.round(totVal)+' L');
-    setText('kpi-po-items',totItems.toLocaleString());
-    setText('kpi-po-value','₹ '+Math.round(totVal/100)/10+' Cr');
-    setText('kpi-avg-tat',avgTAT);
-    setText('kpi-monthly-po',avgMonthlyPO);
-    setText('kpi-monthly-val','₹ '+Math.round(avgMonthlyVal/100)/10+' Cr');
+    setText('k-po-total','₹ '+Math.round(tv)+' L');
+    setText('k-po-items',ti.toLocaleString());
+    setText('k-po-value',fmtCr(tv));
+    setText('k-po-tat',avgTat+' d');
+    setText('k-po-monthlypo',avgMPO);
+    setText('k-po-monthlyval',fmtCr(avgMV));
   }
-  const row2=document.querySelectorAll('#dash-po .kpi-row.six')[1];
-  if(row2){
-    const cards=row2.querySelectorAll('.kpi-card');
-    if(cards[0]){cards[0].querySelector('.kpi-value').textContent='₹ '+avgValPO+' L';cards[0].querySelector('.kpi-sub').textContent='Across all POs';}
-    if(cards[1]){cards[1].querySelector('.kpi-value').textContent=avgItemsPO;cards[1].querySelector('.kpi-sub').textContent='Line items avg';}
-    if(cards[2]){cards[2].querySelector('.kpi-value').textContent=lvPct+'%';cards[2].querySelector('.kpi-sub').textContent=lvPOs.length+' POs below ₹3L';}
-    if(cards[3]){cards[3].querySelector('.kpi-value').textContent=domPOs.length.toLocaleString();cards[3].querySelector('.kpi-sub').textContent=(total>0?(domPOs.length/total*100).toFixed(1):0)+'% of total';}
-    if(cards[4]){cards[4].querySelector('.kpi-value').textContent=importPOs.length.toLocaleString();cards[4].querySelector('.kpi-sub').textContent='₹ '+Math.round(importVal/100)/10+' Cr ('+(total>0?(importPOs.length/total*100).toFixed(1):0)+'%)';}
-    if(cards[5]){cards[5].querySelector('.kpi-value').textContent=uVendors;cards[5].querySelector('.kpi-sub').textContent=uCountries+' countries';}
-  }
+  setText('k-po-items-sub','Avg '+avgI+' items/PO');
+  setText('k-po-avgval','₹ '+avgVPO+' L');
+  setText('k-po-avgitems',avgI);
+  setText('k-po-lvpct',lvPct+'%');
+  setText('k-po-lvpct-sub',lvN+' POs below ₹3L');
+  setText('k-po-dom',domN.toLocaleString());
+  setText('k-po-dom-sub',N>0?(domN/N*100).toFixed(1)+'% domestic':'0% domestic');
+  setText('k-po-imp',impN.toLocaleString());
+  setText('k-po-imp-sub',fmtCr(impV)+' import');
+  setText('k-po-vendors',uV.toString());
+  setText('k-po-vendors-sub',uC+' countries');
 }
 
-function renderPoCategoryChart(data) {
-  const mode=globalMetric==='value'?'value':poCategoryMetric;
-  const agg=aggBy(data,'category');
-  const cats=['Supply','Service','Others'];
-  const vals=cats.map(c=>mode==='count'?(agg[c]?.count||0):Math.round(agg[c]?.value||0));
-  renderApex('poCategoryChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],colors:[palette[1]],
-    xaxis:{categories:cats,labels:{style:{fontSize:'11px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:5,columnWidth:'45%'}},dataLabels:{enabled:true,style:{fontSize:'11px'}},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
+function poCategory(data){
+  const m=METRIC==='value'?'value':poCatMode;
+  const ag=agg(data,'category');
+  const vals=CATS.map(c=>m==='count'?Math.round(ag[c]?.n||0):Math.round(ag[c]?.v||0));
+  C.bar('poCategoryChart',CATS,[{data:vals,color:C.pal[1],label:m==='count'?'POs':'₹L'}]);
 }
 
-function renderPoTatChart(data) {
+function poTat(data){
   const stages=['PR→RFQ','RFQ→Offer','Offer→TR','TR→RA','RA→NFA','NFA→PO'];
   const avgs=stages.map(s=>{
-    const vals=data.filter(r=>r.stageTat&&r.stageTat[s]>0).map(r=>r.stageTat[s]);
-    return vals.length?Math.round(vals.reduce((a,v)=>a+v,0)/vals.length*10)/10:0;
+    const v=data.filter(r=>r.stageTat&&r.stageTat[s]>0).map(r=>r.stageTat[s]);
+    return v.length?Math.round(v.reduce((a,x)=>a+x,0)/v.length*10)/10:0;
   });
-  renderApex('poTatChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'Avg Days',data:avgs}],
-    colors:palette,
-    xaxis:{categories:stages,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}},title:{text:'Days',style:{fontSize:'11px'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'55%',distributed:true}},
-    dataLabels:{enabled:true,style:{fontSize:'10px'}},legend:{show:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>v+' days'}}
-  });
-}
-
-function renderPoMonthlyChart(data) {
-  const mode=globalMetric==='value'?'value':poMonthlyMetric;
-  const counts=months.map(m=>data.filter(r=>r.month===m).length);
-  const values=months.map(m=>Math.round(data.filter(r=>r.month===m).reduce((a,r)=>a+r.value,0)));
-  const vals=mode==='count'?counts:values;
-  renderApex('poMonthlyChart',{
-    chart:{type:'area',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],colors:[palette[0]],
-    stroke:{width:2,curve:'smooth'},fill:{type:'gradient',gradient:{opacityFrom:0.35,opacityTo:0.05}},
-    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    markers:{size:4,strokeWidth:2},grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
-}
-
-function renderPoTatTrendChart(data) {
-  const avgs=months.map(m=>{
-    const d=data.filter(r=>r.month===m); if(!d.length) return null;
-    return Math.round(d.reduce((a,r)=>a+r.tat,0)/d.length*10)/10;
-  });
-  renderApex('poTatTrendChart',{
-    chart:{type:'line',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:'Avg TAT',data:avgs},{name:'Target',data:months.map(()=>18)}],
-    stroke:{width:[2,2],curve:'smooth',dashArray:[0,5]},
-    colors:[palette[3],palette[4]],
-    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'}},title:{text:'Days',style:{fontSize:'11px'}}},
-    markers:{size:[4,0]},legend:{position:'top',fontSize:'11px'},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{shared:true,y:{formatter:v=>v!=null?v+' days':'N/A'}}
-  });
-}
-
-function renderPoCapexChart(data) {
-  const mode=globalMetric==='value'?'value':poCapexMetric;
-  const capex=months.map(m=>{const d=data.filter(r=>r.month===m&&r.capex); return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
-  const opex =months.map(m=>{const d=data.filter(r=>r.month===m&&!r.capex);return mode==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
-  renderApex('poCapexChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans',stacked:true},
-    series:[{name:'Capex',data:capex},{name:'Opex',data:opex}],colors:[palette[0],palette[2]],
-    xaxis:{categories:months,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{columnWidth:'55%'}},dataLabels:{enabled:false},
-    legend:{position:'top',fontSize:'11px'},grid:{strokeDashArray:4,borderColor:'#e2e5ef'}
-  });
-}
-
-function renderPoCountryChart(data) {
-  const mode=globalMetric==='value'?'value':poCountryMetric;
-  const agg=aggBy(data,'country');
-  const ctrs=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
-  const vals=ctrs.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value));
-  renderApex('poCountryChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],
-    xaxis:{categories:ctrs,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'55%',distributed:true}},
-    colors:palette,legend:{show:false},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
-}
-
-function renderPoCurrencyChart(data) {
-  const mode=globalMetric;
-  const agg=aggBy(data,'currency');
-  const curs=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value);
-  const vals=curs.map(c=>mode==='count'?agg[c].count:Math.round(agg[c].value));
-  renderApex('poCurrencyChart',{
-    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:vals,labels:curs,colors:palette2,
-    legend:{position:'bottom',fontSize:'10px'},dataLabels:{style:{fontSize:'10px'}},
-    plotOptions:{pie:{donut:{size:'50%',labels:{show:true,total:{show:true,label:'Currencies',fontSize:'11px',formatter:()=>curs.length}}}}}
-  });
-}
-
-function renderPoLocationChart(data) {
-  const mode=globalMetric==='value'?'value':poLocationMetric;
-  const agg=aggBy(data,'location');
-  const locs=Object.keys(agg).sort((a,b)=>agg[b].count-agg[a].count);
-  const vals=locs.map(l=>mode==='count'?agg[l].count:Math.round(agg[l].value));
-  renderApex('poLocationChart',{
-    chart:{type:'bar',height:300,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:vals}],colors:[palette[1]],
-    xaxis:{categories:locs,labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,horizontal:true,barHeight:'60%'}},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
-}
-
-function renderPoValueBucketChart(data) {
-  const mode=globalMetric;
-  const agg=aggBy(data,'valueBucket');
-  const vals=valueBuckets.map(b=>mode==='count'?(agg[b]?.count||0):Math.round(agg[b]?.value||0));
-  renderApex('poValueBucketChart',{
-    chart:{type:'donut',height:280,fontFamily:'DM Sans'},
-    series:vals,labels:valueBuckets,colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},dataLabels:{style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:v=>mode==='count'?v+' POs':'₹'+v+' L'}},
-    plotOptions:{pie:{donut:{size:'55%',labels:{show:true,total:{show:true,label:'Total POs',fontSize:'11px',formatter:()=>data.length}}}}}
-  });
-}
-
-function renderPoBuyerChart(data) {
-  const mode=globalMetric==='value'?'value':poBuyerMetric;
-  const agg=aggBy(data,'buyer');
-  let sorted=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
-  if(poBuyerMode==='bottom') sorted=sorted.reverse();
-  const top=sorted.slice(0,10);
-  renderApex('poBuyerChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:top.map(b=>mode==='count'?agg[b].count:Math.round(agg[b].value))}],
-    colors:[poBuyerMode==='top'?palette[0]:palette[4]],
-    xaxis:{categories:top.map(b=>b.split(' ')[0]),labels:{style:{fontSize:'10px'}}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
-}
-
-function renderPoVendorChart(data) {
-  const mode=globalMetric==='value'?'value':poVendorMetric;
-  const agg=aggBy(data,'vendor');
-  let sorted=Object.keys(agg).sort((a,b)=>mode==='count'?(agg[b].count-agg[a].count):(agg[b].value-agg[a].value));
-  if(poVendorMode==='bottom') sorted=sorted.reverse();
-  const top=sorted.slice(0,10);
-  renderApex('poVendorChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:top.map(v=>mode==='count'?agg[v].count:Math.round(agg[v].value))}],
-    colors:[poVendorMode==='top'?palette[5]:palette[3]],
-    xaxis:{categories:top.map(v=>v.length>15?v.slice(0,14)+'…':v),labels:{style:{fontSize:'9px'},rotate:-25}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
-}
-
-function renderPoMaterialChart(data) {
-  const mode=globalMetric;
-  const agg=aggBy(data,'material');
-  const mats=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,8);
-  const vals=mats.map(m=>mode==='count'?agg[m].count:Math.round(agg[m].value));
-  renderApex('poMaterialChart',{
-    chart:{type:'pie',height:280,fontFamily:'DM Sans'},
-    series:vals,labels:mats,colors:palette,
-    legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{formatter:v=>Math.round(v)+'%',style:{fontSize:'10px'}},
-    tooltip:{y:{formatter:v=>mode==='count'?v+' POs':'₹'+v+' L'}}
-  });
-}
-
-function renderPoMaterialRankChart(data) {
-  const mode=globalMetric;
-  const agg=aggBy(data,'material');
-  const mats=Object.keys(agg).sort((a,b)=>agg[b].value-agg[a].value).slice(0,10);
-  renderApex('poMaterialRankChart',{
-    chart:{type:'bar',height:280,toolbar:{show:false},fontFamily:'DM Sans'},
-    series:[{name:mode==='count'?'POs':'Value (L)',data:mats.map(m=>mode==='count'?agg[m].count:Math.round(agg[m].value))}],
-    colors:[palette[2]],
-    xaxis:{categories:mats.map(m=>m.length>14?m.slice(0,13)+'…':m),labels:{style:{fontSize:'9px'},rotate:-25}},
-    yaxis:{labels:{style:{fontSize:'10px'},formatter:v=>mode==='value'?'₹'+v:v}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'60%'}},dataLabels:{enabled:false},
-    grid:{strokeDashArray:4,borderColor:'#e2e5ef'},
-    tooltip:{y:{formatter:v=>mode==='value'?'₹'+v+' L':v+' POs'}}
-  });
-}
-
-// ════════════════════════════════════════════════
-//  PATCH HEADERS (ageing stage + buyer/vendor toggles)
-// ════════════════════════════════════════════════
-function patchHeaders() {
-  // Ageing chart — add stage selector buttons
-  const ageCard=document.getElementById('prAgeingChart')?.closest('.chart-card');
-  if(ageCard&&!ageCard.dataset.patched){
-    ageCard.dataset.patched='1';
-    ageCard.querySelector('.chart-header').innerHTML=`
-      <div><div class="chart-title">Ageing Distribution</div><div class="chart-subtitle">PRs by ageing bucket</div></div>
-      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
-        <button class="chart-btn active" onclick="setAgeingStage('all',this)">All</button>
-        <button class="chart-btn" onclick="setAgeingStage('rfq',this)">RFQ</button>
-        <button class="chart-btn" onclick="setAgeingStage('offer',this)">Offer</button>
-        <button class="chart-btn" onclick="setAgeingStage('tr',this)">TR</button>
-        <button class="chart-btn" onclick="setAgeingStage('ra',this)">RA</button>
-        <button class="chart-btn" onclick="setAgeingStage('nfa',this)">NFA</button>
-        <button class="chart-btn" onclick="setAgeingStage('po',this)">PO</button>
-      </div>`;
-  }
-  // PR Buyer — add Count/Value toggle
-  const prBuyerCard=document.getElementById('prBuyerChart')?.closest('.chart-card');
-  if(prBuyerCard&&!prBuyerCard.dataset.patched){
-    prBuyerCard.dataset.patched='1';
-    prBuyerCard.querySelector('.chart-header').innerHTML=`
-      <div><div class="chart-title">Buyer Performance</div><div class="chart-subtitle">PR handled per buyer</div></div>
-      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
-        <button class="chart-btn active" onclick="switchBuyerView('pr','top',this)">Top 10</button>
-        <button class="chart-btn" onclick="switchBuyerView('pr','bottom',this)">Bottom 10</button>
-        <button class="chart-btn active" onclick="switchBuyerMetric('pr','count',this)" style="margin-left:4px">Count</button>
-        <button class="chart-btn" onclick="switchBuyerMetric('pr','value',this)">Value</button>
-      </div>`;
-  }
-  // PO Buyer — add Count/Value toggle
-  const poBuyerCard=document.getElementById('poBuyerChart')?.closest('.chart-card');
-  if(poBuyerCard&&!poBuyerCard.dataset.patched){
-    poBuyerCard.dataset.patched='1';
-    poBuyerCard.querySelector('.chart-header').innerHTML=`
-      <div><div class="chart-title">Buyer Ranking</div><div class="chart-subtitle">POs closed per buyer</div></div>
-      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
-        <button class="chart-btn active" onclick="switchBuyerView('po','top',this)">Top 10</button>
-        <button class="chart-btn" onclick="switchBuyerView('po','bottom',this)">Bottom 10</button>
-        <button class="chart-btn active" onclick="switchBuyerMetric('po','count',this)" style="margin-left:4px">Count</button>
-        <button class="chart-btn" onclick="switchBuyerMetric('po','value',this)">Value</button>
-      </div>`;
-  }
-  // PO Vendor — add Count/Value toggle
-  const poVendorCard=document.getElementById('poVendorChart')?.closest('.chart-card');
-  if(poVendorCard&&!poVendorCard.dataset.patched){
-    poVendorCard.dataset.patched='1';
-    poVendorCard.querySelector('.chart-header').innerHTML=`
-      <div><div class="chart-title">Vendor Ranking</div><div class="chart-subtitle">PO value by vendor</div></div>
-      <div class="chart-actions" style="flex-wrap:wrap;gap:3px;">
-        <button class="chart-btn active" onclick="switchVendorView('top',this)">Top 10</button>
-        <button class="chart-btn" onclick="switchVendorView('bottom',this)">Bottom 10</button>
-        <button class="chart-btn active" onclick="switchVendorMetric('count',this)" style="margin-left:4px">Count</button>
-        <button class="chart-btn" onclick="switchVendorMetric('value',this)">Value</button>
-      </div>`;
-  }
-  // PO Country — add Count/Value toggle
-  const poCountryCard=document.getElementById('poCountryChart')?.closest('.chart-card');
-  if(poCountryCard&&!poCountryCard.dataset.patched){
-    poCountryCard.dataset.patched='1';
-    poCountryCard.querySelector('.chart-header').innerHTML=`
-      <div><div class="chart-title">Country Exposure</div><div class="chart-subtitle">PO distribution by country</div></div>
-      <div class="chart-actions">
-        <button class="chart-btn active" onclick="switchChart('poCountry','count',this)">Count</button>
-        <button class="chart-btn" onclick="switchChart('poCountry','value',this)">Value</button>
-      </div>`;
-  }
-  // PO Capex — add Count/Value toggle
-  const poCapexCard=document.getElementById('poCapexChart')?.closest('.chart-card');
-  if(poCapexCard&&!poCapexCard.dataset.patched){
-    poCapexCard.dataset.patched='1';
-    poCapexCard.querySelector('.chart-header').innerHTML=`
-      <div><div class="chart-title">Capex vs Opex</div><div class="chart-subtitle">PO split monthly</div></div>
-      <div class="chart-actions">
-        <button class="chart-btn active" onclick="switchChart('poCapex','count',this)">Count</button>
-        <button class="chart-btn" onclick="switchChart('poCapex','value',this)">Value</button>
-      </div>`;
+  C.bar('poTatChart',stages,[{data:avgs,color:null}]);
+  // use distributed colors
+  const el=document.getElementById('poTatChart');
+  if(el){
+    const W=520,H=260,ml=52,mr=18,mt=20,mb=65,gW=W-ml-mr,gH=H-mt-mb;
+    const n=stages.length,bW=Math.min(50,gW/n*0.6);
+    const maxV=Math.max(...avgs,1);
+    let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg" style="max-height:${H}px">`;
+    for(let i=0;i<=4;i++){const y=mt+gH*(1-i/4);svg+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e2e5ef" stroke-width="1"/><text x="${ml-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#8a94a8">${C.fmt(maxV*i/4)}</text>`;}
+    stages.forEach((s,i)=>{
+      const bH=gH*(avgs[i]/maxV);
+      const x=ml+gW*i/n+gW/n/2-bW/2;
+      const y=mt+gH-bH;
+      svg+=`<rect x="${x}" y="${y}" width="${bW}" height="${bH}" fill="${C.pal[i%C.pal.length]}" rx="3" opacity=".9"><title>${s}: ${avgs[i]} days</title></rect>`;
+      svg+=`<text x="${x+bW/2}" y="${y-4}" text-anchor="middle" font-size="10" fill="#4b5773" font-weight="600">${avgs[i]}d</text>`;
+      svg+=`<text x="${x+bW/2}" y="${H-mb+16}" text-anchor="middle" font-size="9" fill="#4b5773">${C.esc(s)}</text>`;
+    });
+    svg+='</svg>';
+    el.innerHTML=svg;
   }
 }
 
-// ════════════════════════════════════════════════
+function poMonthly(data){
+  const m=METRIC==='value'?'value':poMonthMode;
+  const vals=MO.map(mo=>{
+    const d=data.filter(r=>r.month===mo);
+    return m==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));
+  });
+  C.line('poMonthlyChart',MO,[{data:vals,color:C.pal[0],label:m==='count'?'POs':'₹L',area:true}]);
+}
+
+function poTatTrend(data){
+  const avgs=MO.map(m=>{
+    const d=data.filter(r=>r.month===m);
+    return d.length?Math.round(d.reduce((a,r)=>a+r.tat,0)/d.length*10)/10:null;
+  });
+  C.line('poTatTrendChart',MO,[
+    {data:avgs,color:C.pal[3],label:'Avg TAT (days)'},
+    {data:MO.map(()=>18),color:C.pal[4],label:'Target 18d',dash:'6,4'}
+  ],{h:240});
+}
+
+function poCapex(data){
+  const m=METRIC==='value'?'value':poCapexMode;
+  const cx=MO.map(mo=>{const d=data.filter(r=>r.month===mo&&r.capex);return m==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  const ox=MO.map(mo=>{const d=data.filter(r=>r.month===mo&&!r.capex);return m==='count'?d.length:Math.round(d.reduce((a,r)=>a+r.value,0));});
+  C.stackbar('poCapexChart',MO,[{data:cx,color:C.pal[0],label:'Capex'},{data:ox,color:C.pal[2],label:'Opex'}]);
+}
+
+function poCountry(data){
+  const m=METRIC==='value'?'value':poCountryMode;
+  const ag=agg(data,'country');
+  const ctrs=Object.keys(ag).sort((a,b)=>m==='count'?(ag[b].n-ag[a].n):(ag[b].v-ag[a].v));
+  const vals=ctrs.map(c=>m==='count'?ag[c].n:Math.round(ag[c].v));
+  C.hbar('poCountryChart',ctrs,vals,{colors:C.pal,ml:110});
+}
+
+function poCurrency(data){
+  const ag=agg(data,'currency');
+  const curs=Object.keys(ag).sort((a,b)=>ag[b].v-ag[a].v);
+  const vals=curs.map(c=>METRIC==='count'?ag[c].n:Math.round(ag[c].v));
+  C.donut('poCurrencyChart',curs,vals,{colors:C.pal2});
+}
+
+function poLocation(data){
+  const m=METRIC==='value'?'value':poLocMode;
+  const ag=agg(data,'location');
+  const locs=Object.keys(ag).sort((a,b)=>ag[b].n-ag[a].n);
+  const vals=locs.map(l=>m==='count'?ag[l].n:Math.round(ag[l].v));
+  C.hbar('poLocationChart',locs,vals,{colors:[C.pal[1]]});
+}
+
+function poValueBucket(data){
+  const m=METRIC==='value'?'value':'count';
+  const ag=agg(data,'valueBucket');
+  const vals=VBS.map(b=>m==='count'?Math.round(ag[b]?.n||0):Math.round(ag[b]?.v||0));
+  C.donut('poValueBucketChart',VBS,vals,{centerLabel:m==='count'?'POs':'₹L'});
+}
+
+function poBuyer(data){
+  const m=METRIC==='value'?'value':poBuyerMode;
+  const ag=agg(data,'buyer');
+  let s=Object.keys(ag).sort((a,b)=>m==='count'?(ag[b].n-ag[a].n):(ag[b].v-ag[a].v));
+  if(poBuyerRank==='bottom')s=s.reverse();
+  const top=s.slice(0,10);
+  const vals=top.map(b=>m==='count'?ag[b].n:Math.round(ag[b].v));
+  C.bar('poBuyerChart',top.map(b=>b.split(' ')[0]),[{data:vals,color:poBuyerRank==='top'?C.pal[0]:C.pal[4]}]);
+}
+
+function poVendor(data){
+  const m=METRIC==='value'?'value':poVendorMode;
+  const ag=agg(data,'vendor');
+  let s=Object.keys(ag).sort((a,b)=>m==='count'?(ag[b].n-ag[a].n):(ag[b].v-ag[a].v));
+  if(poVendorRank==='bottom')s=s.reverse();
+  const top=s.slice(0,10);
+  const vals=top.map(v=>m==='count'?ag[v].n:Math.round(ag[v].v));
+  C.bar('poVendorChart',top.map(v=>v.length>12?v.slice(0,11)+'…':v),[{data:vals,color:poVendorRank==='top'?C.pal[5]:C.pal[3]}]);
+}
+
+function poMaterial(data){
+  const m=METRIC==='value'?'value':'count';
+  const ag=agg(data,'material');
+  const mats=Object.keys(ag).sort((a,b)=>ag[b].v-ag[a].v).slice(0,8);
+  const vals=mats.map(x=>m==='count'?ag[x].n:Math.round(ag[x].v));
+  C.donut('poMaterialChart',mats,vals,{pie:true,colors:C.pal});
+}
+
+function poMaterialRank(data){
+  const m=METRIC==='value'?'value':'count';
+  const ag=agg(data,'material');
+  const mats=Object.keys(ag).sort((a,b)=>ag[b].v-ag[a].v).slice(0,10);
+  const vals=mats.map(x=>m==='count'?ag[x].n:Math.round(ag[x].v));
+  C.bar('poMaterialRankChart',mats.map(x=>x.length>12?x.slice(0,11)+'…':x),[{data:vals,color:C.pal[2]}],{mb:75});
+}
+
+
+// ══════════════════════════════════════════════════════
+//  LEADERBOARD ANALYTICS — JS MODULE
+//  Fully isolated, extends existing switchDash()
+// ══════════════════════════════════════════════════════
+
+// ── Leaderboard state ──────────────────────────────────
+const LB = {
+  perf: 'top',       // 'top' | 'bottom'
+  role: 'buyer',     // 'buyer' | 'lead' | 'section_head' | 'hod'
+  savingsMode: 'pct',// 'pct' | 'val'
+  currentUser: 'Rahul Sharma', // simulated logged-in user
+};
+
+// ── User pool per role (seeded, deterministic) ──────────
+const LB_USERS = {
+  buyer: ['Rahul Sharma','Priya Nair','Amit Patel','Sneha Kulkarni','Vikram Menon',
+          'Deepa Iyer','Suresh Rao','Anjali Singh','Kiran Gupta','Rohit Das',
+          'Meera Joshi','Arjun Kumar','Pooja Verma','Naveen Reddy','Divya Bhat'],
+  lead:  ['Sanjay Mehta','Lakshmi Rao','Harish Pillai','Nisha Kapoor','Rajiv Bose',
+          'Sunita Verma','Mohan Krishnan','Anita Sharma','Prakash Iyer','Geeta Nair'],
+  section_head:['Vivek Gupta','Rekha Desai','Arun Mishra','Kavita Menon','Sunil Joshi',
+                'Priti Singh','Ramesh Reddy','Shobha Patel','Dinesh Kumar','Uma Rao'],
+  hod:   ['R.K. Sharma','N. Krishnaswamy','S.P. Verma','A. Chatterjee','V.S. Nair',
+          'P.K. Gupta','M.C. Iyer','S.K. Reddy'],
+};
+
+const LB_PLANTS = ['Mumbai','Pune','Ahmedabad','Chennai','Hyderabad','Bengaluru','Delhi','Kolkata','Surat','Nagpur'];
+const LB_AVATAR_COLORS = ['#2563eb','#0891b2','#059669','#d97706','#7c3aed','#dc2626','#1e3a6e','#0d9488','#b45309','#9333ea','#0f766e','#1d4ed8','#065f46','#6d28d9','#be123c'];
+
+// ── Seeded per-user data generator ────────────────────
+function lbSeed(name, salt=0){
+  // Deterministic hash from name+salt
+  let h=salt*1000;
+  for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))&0x7fffffff;
+  return h;
+}
+function lbRand(seed, lo, hi){
+  const s=(seed*1664525+1013904223)&0x7fffffff;
+  return lo + (s/(0x7fffffff)) * (hi-lo);
+}
+
+// Generate complete KPI profile for one user
+function lbUserProfile(name, role){
+  const s=lbSeed(name, role.length);
+  const plant=LB_PLANTS[Math.floor(lbRand(s,0,LB_PLANTS.length))];
+  const openPR     = Math.round(lbRand(s^1, 5, 120));
+  const openPRVal  = Math.round(lbRand(s^2, 0.5, 45)*10)/10; // Cr
+  const pr365      = Math.round(lbRand(s^3, 0, 25));
+  const strikeRate = Math.round(lbRand(s^4, 35, 98)*10)/10;  // %
+  const avgTat     = Math.round(lbRand(s^5, 8, 55)*10)/10;   // days
+  const poMonth    = Math.round(lbRand(s^6, 4, 30)*10)/10;
+  const savingsPct = Math.round(lbRand(s^7, 1, 18)*10)/10;   // %
+  const savingsVal = Math.round(lbRand(s^8, 5, 180));        // L
+  const doa43      = Math.round(lbRand(s^9, 40, 100));
+  const doa45      = Math.round(lbRand(s^10,30, 95));
+  const doa48      = Math.round(lbRand(s^11,25, 90));
+  // Trend: derived from secondary seed
+  const trends=['up','up','up','st','st','dn'];
+  const trend=trends[Math.floor(lbRand(s^12,0,6))];
+  return {name, plant, role, openPR, openPRVal, pr365, strikeRate,
+          avgTat, poMonth, savingsPct, savingsVal, doa43, doa45, doa48, trend};
+}
+
+// Build user list for current role
+function lbGetUsers(){
+  return LB_USERS[LB.role].map(n=>lbUserProfile(n, LB.role));
+}
+
+// Sort and rank users for a given KPI
+// lowerIsBetter: for TAT, openPR, pr365 — lower = better rank
+function lbRankUsers(users, kpiKey, lowerIsBetter=false){
+  const sorted=[...users].sort((a,b)=>
+    lowerIsBetter ? (a[kpiKey]-b[kpiKey]) : (b[kpiKey]-a[kpiKey])
+  );
+  return sorted.map((u,i)=>({...u, rank:i+1, total:sorted.length}));
+}
+
+// Percentile calculation
+function lbPercentile(rank, total){ return Math.round((1-rank/total)*100); }
+
+// Performance color
+function lbPerfColor(pct){
+  if(pct>=70) return '#059669';
+  if(pct>=40) return '#d97706';
+  return '#dc2626';
+}
+
+// Avatar initials color
+function lbAvatarColor(name){
+  let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))&0xff;
+  return LB_AVATAR_COLORS[h%LB_AVATAR_COLORS.length];
+}
+
+function lbInitials(name){
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function lbTrendArrow(t){ return t==='up'?'↑':t==='dn'?'↓':'→'; }
+function lbTrendClass(t, lowerIsBetter=false){
+  if(t==='st') return 'st';
+  if(!lowerIsBetter) return t==='up'?'up':'dn';
+  return t==='up'?'dn':'up'; // for lower-is-better, improvement = going down
+}
+
+// Check if user is current user
+function lbIsMe(name){ return name===LB.currentUser; }
+
+// ── Render a single rank card ────────────────────────
+function lbCard(u, kpiKey, kpiUnit='', lowerIsBetter=false, fmtFn=null){
+  const pct=lbPercentile(u.rank, u.total);
+  const pctColor=lowerIsBetter
+    ? lbPerfColor(100-pct) // for lower-is-better, low rank = good
+    : lbPerfColor(pct);
+  const rawVal=u[kpiKey];
+  const displayVal=fmtFn?fmtFn(rawVal):rawVal;
+  const isMe=lbIsMe(u.name);
+  const rankClass=u.rank===1?'r1':u.rank===2?'r2':u.rank===3?'r3':'rn';
+  const medal=u.rank===1?'🥇':u.rank===2?'🥈':u.rank===3?'🥉':'';
+  const tClass=lbTrendClass(u.trend, lowerIsBetter);
+  // Progress bar: for lower-is-better, invert fill
+  const maxVal=lowerIsBetter?(100-pct)/100:pct/100;
+  const fillW=Math.max(4,Math.round(maxVal*100));
+  const fillColor=pctColor;
+
+  return `<div class="lb-rank-card${isMe?' current-user':''}">
+    <div class="lb-rank-num ${rankClass}">${u.rank}</div>
+    ${medal?`<span class="lb-rank-medal">${medal}</span>`:''}
+    <div class="lb-avatar" style="background:${lbAvatarColor(u.name)}">${lbInitials(u.name)}</div>
+    <div class="lb-info">
+      <div class="lb-name">${u.name}</div>
+      <div class="lb-location">📍 ${u.plant}</div>
+    </div>
+    <div class="lb-bar-wrap">
+      <div class="lb-bar-track"><div class="lb-bar-fill" style="width:${fillW}%;background:${fillColor}"></div></div>
+      <div class="lb-pct-label">${pct}th %ile</div>
+    </div>
+    <div class="lb-kpi-val">
+      <div class="lb-kpi-num">${displayVal}</div>
+      <div class="lb-kpi-unit">${kpiUnit}</div>
+    </div>
+    <div class="lb-trend ${tClass}">${lbTrendArrow(u.trend)}</div>
+  </div>`;
+}
+
+// ── Your Rank spotlight (when not in visible list) ────
+function lbYourRankCard(u, kpiKey, kpiUnit='', lowerIsBetter=false, fmtFn=null){
+  if(!u) return '';
+  const pct=lbPercentile(u.rank, u.total);
+  const pctColor=lowerIsBetter?lbPerfColor(100-pct):lbPerfColor(pct);
+  const perfLabel=pctColor==='#059669'?'Strong':pctColor==='#d97706'?'Average':'Needs Attention';
+  const perfClass=pctColor==='#059669'?'good':pctColor==='#d97706'?'avg':'poor';
+  const displayVal=fmtFn?fmtFn(u[kpiKey]):u[kpiKey];
+  const tClass=lbTrendClass(u.trend,lowerIsBetter);
+  return `<hr class="lb-separator">
+  <div class="lb-your-rank">
+    <div class="lb-your-rank-label"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Your Current Rank</div>
+    <div class="lb-your-rank-row">
+      <div class="lb-your-rank-badge">#${u.rank}</div>
+      <div class="lb-your-rank-details">
+        <div class="lb-your-rank-name">${u.name}</div>
+        <div class="lb-your-rank-meta">
+          <span class="lb-your-rank-chip">📍 ${u.plant}</span>
+          <span class="lb-your-rank-chip">${displayVal} ${kpiUnit}</span>
+          <span class="lb-your-rank-chip ${perfClass}">${pct}th %ile · ${perfLabel}</span>
+          <span class="lb-your-rank-chip" style="color:${tClass==='up'?'#059669':tClass==='dn'?'#dc2626':'#94a3b8'}">${lbTrendArrow(u.trend)} Trend</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Core render engine for a leaderboard widget ───────
+function lbRenderWidget(containerId, users, kpiKey, kpiUnit, lowerIsBetter, displayCount, fmtFn){
+  const ranked=lbRankUsers(users, kpiKey, lowerIsBetter);
+  const visible=LB.perf==='top' ? ranked.slice(0,displayCount) : ranked.slice(-displayCount).reverse();
+  const meRanked=ranked.find(u=>lbIsMe(u.name));
+  const meVisible=visible.some(u=>lbIsMe(u.name));
+
+  let html=visible.map(u=>lbCard(u,kpiKey,kpiUnit,lowerIsBetter,fmtFn)).join('');
+
+  // Show "Your Rank" card only if user not already visible
+  if(meRanked && !meVisible){
+    html+=lbYourRankCard(meRanked,kpiKey,kpiUnit,lowerIsBetter,fmtFn);
+  }
+
+  const el=document.getElementById(containerId);
+  if(el) el.innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No data available</div>';
+}
+
+// ── DOA Compliance renderer ───────────────────────────
+function lbRenderDOA(users){
+  const el=document.getElementById('lb-doa-content');
+  if(!el) return;
+  const doaClauses=['4.3','4.5','4.8'];
+  const doaKeys=['doa43','doa45','doa48'];
+  const doaColors=['#2563eb','#0891b2','#7c3aed'];
+
+  let html='';
+  doaClauses.forEach((clause,ci)=>{
+    const key=doaKeys[ci];
+    const ranked=lbRankUsers(users,key,false);
+    const visible=LB.perf==='top'?ranked.slice(0,5):ranked.slice(-5).reverse();
+    const maxVal=Math.max(...visible.map(u=>u[key]),1);
+    html+=`<div class="lb-doa-card">
+      <div class="lb-doa-title" style="color:${doaColors[ci]}">DOA ${clause}</div>
+      ${visible.map(u=>{
+        const w=Math.round(u[key]/100*100);
+        const color=u[key]>=70?'#059669':u[key]>=45?'#d97706':'#dc2626';
+        const isMe=lbIsMe(u.name);
+        return`<div class="lb-doa-entry" style="${isMe?'background:var(--blue-light);margin:0 -4px;padding:0 4px;border-radius:4px':''}">
+          <div class="lb-doa-name" title="${u.name}">${u.name.split(' ')[0]}${isMe?' ★':''}</div>
+          <div class="lb-doa-bar-outer"><div class="lb-doa-bar-inner" style="width:${w}%;background:${color}"></div></div>
+          <div class="lb-doa-pct" style="color:${color}">${u[key]}%</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ── Master leaderboard render ─────────────────────────
+function renderLeaderboard(){
+  const users=lbGetUsers();
+  const N=8; // visible entries per widget
+
+  // Open PRs — lower is better (fewer open = more efficient)
+  lbRenderWidget('lb-list-openpr',  users,'openPR',   'PRs',  true,  N);
+  // Open PR Value — lower is better
+  lbRenderWidget('lb-list-openprval',users,'openPRVal','Cr',  true,  N, v=>v.toFixed(1));
+  // 365 Days — lower is better
+  lbRenderWidget('lb-list-365',     users,'pr365',    'PRs',  true,  N);
+  // Strike Rate — higher is better
+  lbRenderWidget('lb-list-strike',  users,'strikeRate','%',  false, N, v=>v.toFixed(1)+'%');
+  // Avg TAT — lower is better
+  lbRenderWidget('lb-list-tat',     users,'avgTat',   'days', true,  N, v=>v.toFixed(1));
+  // PO per Month — higher is better
+  lbRenderWidget('lb-list-pomonth', users,'poMonth',  '/mo', false, N, v=>v.toFixed(1));
+  // Savings
+  const savKey=LB.savingsMode==='pct'?'savingsPct':'savingsVal';
+  const savUnit=LB.savingsMode==='pct'?'%':'₹L';
+  const savFmt=LB.savingsMode==='pct'?v=>v.toFixed(1)+'%':v=>'₹'+v+'L';
+  lbRenderWidget('lb-list-savings', users,savKey,     savUnit,false, N, savFmt);
+  // DOA Compliance
+  lbRenderDOA(users);
+}
+
+// ── Toggle handlers ───────────────────────────────────
+function setLbPerf(mode, btn){
+  LB.perf=mode;
+  document.querySelectorAll('#lb-perf-group .lb-toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard();
+}
+function setLbRole(role, btn){
+  LB.role=role;
+  document.querySelectorAll('#lb-role-group .lb-toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard();
+}
+function setLbSavingsMode(mode, btn){
+  LB.savingsMode=mode;
+  btn.closest('.lb-widget-toggle').querySelectorAll('.lb-widget-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard();
+}
+
+// ── Extend existing switchDash to handle 'lb' ─────────
+const _origSwitchDash = switchDash;
+// ══════════════════════════════════════════════════════
 //  INIT
-// ════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  patchHeaders();
-  buildFilterPanel();
-  renderPrCharts();
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',function(){
+  buildFilter();
+  renderAll();
 });
+
 </script>
 </body>
 </html>
