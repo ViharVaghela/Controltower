@@ -202,7 +202,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);font-size:13px
 .lb-toggle-btn.active{background:white;color:var(--navy);}
 .lb-toggle-btn.perf-top.active{background:linear-gradient(135deg,#10b981,#059669);color:white;}
 .lb-toggle-btn.perf-bottom.active{background:linear-gradient(135deg,#ef4444,#dc2626);color:white;}
-.lb-role-group{display:flex;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;gap:2px;}
+.lb-role-group{display:flex;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;gap:2px;flex-wrap:wrap;}
+.lb-role-group .lb-toggle-btn{font-size:11px;padding:5px 12px;}
+.lb-role-group .lb-toggle-btn.active{background:rgba(255,255,255,.95);color:var(--navy);font-weight:700;}
 .lb-meta-row{display:flex;align-items:center;gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);}
 .lb-meta-item{display:flex;align-items:center;gap:6px;}
 .lb-meta-dot{width:8px;height:8px;border-radius:50%;}
